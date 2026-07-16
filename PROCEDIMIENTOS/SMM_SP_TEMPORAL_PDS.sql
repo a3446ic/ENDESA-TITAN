@@ -1,0 +1,137 @@
+CREATE OR REPLACE PROCEDURE EXT.SMM_SP_TEMPORAL_PDS( IN i_processingunitseq BIGINT, IN i_period VARCHAR(25), IN i_periodseq BIGINT)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER 
+DEFAULT SCHEMA EXT AS
+/*---------------------------------------------------------------------
+    | Author: Samuel Miralles Manresa
+    | Company: Inycom
+    | Initial Version Date: 
+    |----------------------------------------------------------------------
+    | Procedure Purpose: Volcar datos de Posiciones y Participantes a una Temporal de Equipamiento
+    |
+	| Version:	0.1	SMM	   Initial Version.
+	|
+    -----------------------------------------------------------------------
+*/
+BEGIN
+    DECLARE v_cont INT = 0;
+	DECLARE v_proc_name NVARCHAR(50) := ::CURRENT_OBJECT_SCHEMA ||'.'|| ::CURRENT_OBJECT_NAME;
+	DECLARE v_version NVARCHAR(4) := '0.1';
+	DECLARE v_log_count INTEGER := 0;
+	DECLARE v_idproceso BIGINT := 0;
+	DECLARE v_tenantid NVARCHAR(4) := EXT.LIB_GLOBAL_ENDESA:getTenantID();
+	DECLARE v_permisos_log NVARCHAR(50) := EXT.LIB_GLOBAL_ENDESA:GET_PERMISOS_LOG();
+	DECLARE v_eot DATE := EXT.LIB_CONSTANTES_ENDESA:v_eot;
+	DECLARE v_finicio TIMESTAMP = CURRENT_TIMESTAMP;
+	DECLARE v_contador_ctrl_inf INT;
+	DECLARE v_num_ejecucion INT;
+	
+
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        CALL EXT.LIB_GLOBAL_ENDESA:WRITE_DEBUG (v_tenantid,v_permisos_log, v_proc_name, 'Error en procedimiento principal ' || v_proc_name || ' - SQL_ERROR_MESSAGE: ' || IFNULL(::SQL_ERROR_MESSAGE,'')
+																											|| '. SQL_ERROR_CODE: ' || ::SQL_ERROR_CODE, v_log_count, v_idproceso, 'error');
+		
+		CALL EXT.SMM_SP_Z_CTRL_INF(v_contador_ctrl_inf, v_num_ejecucion, v_proc_name, v_finicio, current_timestamp, 'Error:'||::SQL_ERROR_CODE||::SQL_ERROR_MESSAGE);																									
+		RESIGNAL;
+	END;
+	
+	CALL EXT.LIB_GLOBAL_ENDESA:WRITE_DEBUG (v_tenantid,v_permisos_log, v_proc_name, 'Procedure starting for: ' || v_proc_name, v_log_count, v_idproceso,'info');
+	
+
+	CALL EXT.LIB_GLOBAL_ENDESA:WRITE_DEBUG (v_tenantid,v_permisos_log, v_proc_name, 'Argumentos del proceso: '
+		|| ' || i_processingunitseq: ' || i_processingunitseq
+		|| ' || i_period: ' || i_period
+		|| ' || i_periodseq: ' || i_periodseq
+		, v_log_count, v_idproceso,'info');
+	
+	CALL EXT.LIB_GLOBAL_ENDESA:WRITE_DEBUG (v_tenantid,v_permisos_log, v_proc_name,'Inicio Truncado de la tabla SMM_PDS_TEMP.', v_log_count, v_idproceso,'info');
+	EXECUTE IMMEDIATE 'TRUNCATE TABLE EXT.SMM_PDS_TEMP';
+	
+	CALL EXT.LIB_GLOBAL_ENDESA:WRITE_DEBUG (v_tenantid,v_permisos_log, v_proc_name,'Cargando tabla SMM_PDS_TEMP. Periodo: ' || i_period, v_log_count, v_idproceso,'info');
+	INSERT INTO EXT.SMM_PDS_TEMP(   PERIODSEQ, RULEELEMENTOWNERSEQ, PAYEESEQ, PAYEEID, PDS, NOMBRE_FISCAL, CIF, NOMBRE_CUENTA, CALLE, COD_POSTAL, 
+                                          PROVINCIA, POBLACION, TIPO_IMPOSITIVO, PAR_PROVEEDOR, CODIGODEUDOR, NOMBRE_COMERCIAL, IMPORTE_UB, FECHA_CONTRATACION, 
+                                          TIPO_PRESTADOR, COMUNIDAD_AUTONOMA, TERRITORIO, ZONA, POS_NOMBRE_COMERCIAL, CANAL, SUBCANAL, DELEGACION, 
+                                          BASE_COMISION, FECHA_INI_VIGENCIA,TERMINATIONDATE,TITLE_NAME,CANAL_CALCULOS,TIPO_POSICION,
+                                          APLICACION_INCEN_CP, POSICION_USUARIO) --APM 07.03.2024 Evo CPs
+    SELECT 
+        PER.PERIODSEQ, 
+        POS.RULEELEMENTOWNERSEQ, 
+        PAR.PAYEESEQ,
+        PAYEE.PAYEEID, 
+        POS.NAME PDS, 
+        PAR.LASTNAME NOMBRE_FISCAL,
+        PAR.GENERICATTRIBUTE1 AS CIF,
+        PAR.GENERICATTRIBUTE2 AS NOMBRE_CUENTA,
+        PAR.GENERICATTRIBUTE3 AS CALLE,
+        PAR.GENERICATTRIBUTE4 AS COD_POSTAL,
+        PAR.GENERICATTRIBUTE5 AS PROVINCIA,
+        PAR.GENERICATTRIBUTE6 AS POBLACION,
+        PAR.GENERICATTRIBUTE7 AS TIPO_IMPOSITIVO,
+        PAR.GENERICATTRIBUTE8 AS CODIGOE4E,  -- PAR_PROVEEDOR
+        PAR.GENERICATTRIBUTE9 AS CODIGODEUDOR,                   
+        PAR.GENERICATTRIBUTE10 AS NOMBRE_COMERCIAL,
+        PAR.GENERICNUMBER1 AS IMPORTE_UB,
+        PAR.GENERICDATE1 AS FECHA_CONTRATACION,
+        POS.GENERICATTRIBUTE1 AS TIPO_PRESTADOR,
+        POS.GENERICATTRIBUTE2 AS COMUNIDAD_AUTONOMA,
+        POS.GENERICATTRIBUTE3 AS TERRITORIO,
+        POS.GENERICATTRIBUTE4 AS ZONA,
+        POS.GENERICATTRIBUTE5 AS POS_NOMBRE_COMERCIAL,
+        POS.GENERICATTRIBUTE6 AS CANAL,
+        POS.GENERICATTRIBUTE7 AS SUBCANAL,
+        POS.GENERICATTRIBUTE8 AS DELEGACION,
+        POS.GENERICATTRIBUTE10 AS BASE_COMISION,
+        POS.EFFECTIVESTARTDATE,    -- Fecha inicio de vigencia 
+        PAR.TERMINATIONDATE  AS TERMINATIONDATE,
+        TIT.NAME  AS TITLE_NAME,
+        TIT.GENERICATTRIBUTE1 AS CANAL_CALCULOS,
+        TIT.GENERICATTRIBUTE2 AS TIPO_POSICION,
+        POS.GENERICBOOLEAN1 AS APLICACION_INCEN_CP, --APM 07.03.2024 Evo CPs
+        POS.GENERICATTRIBUTE11 AS POSICION_USUARIO --APM 25.02.2025
+                    
+    FROM CS_PERIOD per
+        JOIN  CS_POSITION pos ON  pos.REMOVEDATE = v_eot
+            AND pos.TENANTID = v_tenantid 
+            AND pos.EFFECTIVESTARTDATE <= ADD_DAYS(PER.ENDDATE,- 1)
+            AND pos.EFFECTIVEENDDATE >= ADD_DAYS(PER.ENDDATE,- 1)
+            -- and POS.ISLAST = 1   -- Con esta condicion no se quedaba con la version correcta asociada al fichero
+            and POS.PROCESSINGUNITSEQ = i_processingUnitSeq
+                          
+        INNER JOIN CS_PARTICIPANT par ON POS.PAYEESEQ = PAR.PAYEESEQ
+            AND par.TENANTID = v_tenantid
+            AND par.REMOVEDATE = v_eot
+            AND PAR.EFFECTIVESTARTDATE <= ADD_DAYS(PER.ENDDATE,- 1)
+            AND PAR.EFFECTIVEENDDATE >= ADD_DAYS(PER.ENDDATE,- 1)
+            --and PAR.ISLAST = 1 -- Con esta condicion no se quedaba con la version correcta asociada al fichero
+
+        INNER JOIN CS_PAYEE payee ON PAR.PAYEESEQ = PAYEE.PAYEESEQ
+            AND PAYEE.REMOVEDATE =  v_eot
+            --AND PAYEE.ISLAST =1   -- Con esta condicion no se quedaba con la version correcta asociada al fichero
+            AND PAYEE.EFFECTIVESTARTDATE <=  ADD_DAYS(PER.ENDDATE,- 1)
+            AND PAYEE.EFFECTIVEENDDATE >=  ADD_DAYS(PER.ENDDATE,- 1)
+            AND payee.TENANTID = v_tenantid
+
+        INNER JOIN CS_TITLE tit ON POS.TITLESEQ = TIT.RULEELEMENTOWNERSEQ
+            AND TIT.REMOVEDATE = v_eot
+            AND TIT.EFFECTIVESTARTDATE <=  ADD_DAYS(PER.ENDDATE,- 1)
+            AND TIT.EFFECTIVEENDDATE >=  ADD_DAYS(PER.ENDDATE,- 1)
+            AND TIT.TENANTID = v_tenantid
+                            
+    WHERE
+        per.REMOVEDATE = v_eot
+        AND per.PERIODSEQ = i_periodseq
+        and par.GENERICATTRIBUTE1 is not null;
+                 
+    -- filas := sql%rowcount;
+    COMMIT;
+    CALL LIB_GLOBAL_ENDESA:WRITE_DEBUG(v_tenantid,v_permisos_log, v_proc_name,'Fin Carga Registros Créditos de la tabla SMM_PDS_TEMP: '|| ::ROWCOUNT || ' filas.', v_log_count, v_idproceso,'info');
+    
+    
+	
+	
+	CALL EXT.SMM_SP_Z_CTRL_INF(v_contador_ctrl_inf, v_num_ejecucion, v_proc_name, v_finicio, current_timestamp, NULL);
+	
+	CALL LIB_GLOBAL_ENDESA:WRITE_DEBUG(v_tenantid,v_permisos_log, v_proc_name, 'Fin procedimiento', v_log_count, v_idproceso, 'info');
+end;

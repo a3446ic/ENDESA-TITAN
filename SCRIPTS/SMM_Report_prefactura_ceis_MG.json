@@ -1,0 +1,126 @@
+{
+  "idInforme": "PREFACTURA_CEIS",
+  "nombrePlantilla": "Report_prefactura_ceis_adaptado.xlsx--NO USADO EN PRUEBA",
+  "pestanas": [
+    {
+      "nombreHoja": "Electricidad Captación",
+      "modoQuery": "SEPARADA",
+      "queries": {
+        "cabecera": {
+          "sql": "SELECT * FROM EXT.SMM_F_CABECERA_PREFACTURA_CEIS(?,?,'ELECTRICIDAD')"          
+        },
+        "detalle": {
+          "sql": "SELECT 
+                TARIFA,
+                OFERTA,
+                TRAMPO_POTENCIA,
+                TRAMO_CONSUMO,
+                REPLACE(CAST(ROUND(IMPORTE_UNITARIO , 2) AS DECIMAL(10,2)), '.', ',')  as IMPORTE_UNITARIO,
+                NUM_UNIDADES,
+                REPLACE(CAST(ROUND(IMPORTE_TOTAL_DETALLE , 2) AS DECIMAL(10,2)), '.', ',')  as IMPORTE_TOTAL_DETALLE
+            FROM EXT.ENEL_PREFACTURA_CEIS 
+            WHERE    PERIODO='Enero 2026' AND
+                    CODIGO_CLIENTE='0002' AND
+                    LINEA_NEGOCIO='ELECTRICIDAD' AND
+                    CONCEPTO_LIQ='CAPTACION' "
+        }
+      },
+      "filas": [
+        { "tipo": "CABECERA_FIJA", "filaPlantilla": 2, "campos": [
+          { "campo": "NOMBRE_CLIENTE", "columna": 1 }
+        ]},
+        { "tipo": "CABECERA_FIJA", "filaPlantilla": 4, "campos": [
+          { "campo": "CIF", "columna": 2 }
+        ]},
+        { "tipo": "CABECERA_FIJA", "filaPlantilla": 5, "campos": [
+          { "campo": "NUM_FACTURA", "columna": 2 }
+        ]},
+        { "tipo": "CABECERA_FIJA", "filaPlantilla": 6, "campos": [
+          { "campo": "FECHA_FACTURA", "columna": 2 }
+        ]},
+        { "tipo": "CABECERA_FIJA", "filaPlantilla": 9, "campos": [
+          { "campo": "TITULO", "columna": 1 }
+        ]},
+        { "tipo": "CABECERA_TABLA", "filaPlantilla": 10 },
+        { "tipo": "DETALLE", "filaPlantilla": 11, "campos": [
+          { "campo": "TARIFA", "columna": 1, "tipoDato": "TEXT" },
+          { "campo": "OFERTA", "columna": 2, "tipoDato": "TEXT" },
+          { "campo": "TRAMPO_POTENCIA", "columna": 3, "tipoDato": "NUMBER" },
+          { "campo": "TRAMO_CONSUMO", "columna": 4, "tipoDato": "NUMBER" },
+          { "campo": "IMPORTE_UNITARIO", "columna": 5, "tipoDato": "CURRENCY", "formato": "#,##0.00 €" },
+          { "campo": "NUM_UNIDADES", "columna": 7, "tipoDato": "NUMBER" },
+          { "campo": "IMPORTE_TOTAL_DETALLE", "columna": 8, "tipoDato": "CURRENCY", "formato": "#,##0.00 €" }
+        ]},
+        { "tipo": "TOTAL", "filaPlantilla": 12, "campos": [
+          { "campo": "IMPORTE_BASE", "columna": 8, "tipoDato": "CURRENCY", "formato": "#,##0.00 €" }
+        ]},        
+        { "tipo": "TOTAL", "filaPlantilla": 13, "campos": [
+          { "campo": "ETIQUETA_IVA", "columna": 1 },
+          { "campo": "IMPORTE_IVA", "columna": 8, "tipoDato": "CURRENCY", "formato": "#,##0.00 €" }
+        ]},        
+        { "tipo": "TOTAL", "filaPlantilla": 14, "campos": [
+          { "campo": "IMPORTE_TOTAL", "columna": 8, "tipoDato": "CURRENCY", "formato": "#,##0.00 €" }
+        ]}
+      ]
+    },
+    {
+      "nombreHoja": "Gas Captación",
+      "modoQuery": "SEPARADA",
+      "queries": {
+        "cabecera": {
+          "sql": "SELECT * FROM EXT.SMM_F_CABECERA_PREFACTURA_CEIS(?,?,'GAS')"          
+        },
+        "detalle": {
+          "sql": "SELECT 
+                TARIFA,
+                OFERTA,
+                TRAMO_CONSUMO,
+                REPLACE(CAST(ROUND(IMPORTE_UNITARIO , 2) AS DECIMAL(10,2)), '.', ',')  as IMPORTE_UNITARIO,
+                NUM_UNIDADES,
+                REPLACE(CAST(ROUND(IMPORTE_TOTAL_DETALLE , 2) AS DECIMAL(10,2)), '.', ',')  as IMPORTE_TOTAL_DETALLE
+            FROM EXT.ENEL_PREFACTURA_CEIS 
+            WHERE   PERIODO='Enero 2026' AND
+                    CODIGO_CLIENTE='0002' AND
+                    LINEA_NEGOCIO='GAS' AND
+                    CONCEPTO_LIQ='CAPTACION'"
+        }
+      },
+      "filas": [
+        { "tipo": "CABECERA_FIJA", "filaPlantilla": 2, "campos": [
+          { "campo": "NOMBRE_CLIENTE", "columna": 1 }
+        ]},
+        { "tipo": "CABECERA_FIJA", "filaPlantilla": 4, "campos": [
+          { "campo": "CIF", "columna": 2 }
+        ]},
+        { "tipo": "CABECERA_FIJA", "filaPlantilla": 5, "campos": [
+          { "campo": "NUM_FACTURA", "columna": 2 }
+        ]},
+        { "tipo": "CABECERA_FIJA", "filaPlantilla": 6, "campos": [
+          { "campo": "FECHA_FACTURA", "columna": 2, "tipoDato": "DATE", "formato": "dd/MM/yyyy" }
+        ]},
+        { "tipo": "CABECERA_FIJA", "filaPlantilla": 9, "campos": [
+          { "campo": "TITULO", "columna": 1 }
+        ]},
+        { "tipo": "CABECERA_TABLA", "filaPlantilla": 10 },
+        { "tipo": "DETALLE", "filaPlantilla": 11, "campos": [
+          { "campo": "TARIFA", "columna": 1, "tipoDato": "TEXT" },
+          { "campo": "OFERTA", "columna": 2, "tipoDato": "TEXT" },
+          { "campo": "TRAMO_CONSUMO", "columna": 3, "tipoDato": "NUMBER" },
+          { "campo": "IMPORTE_UNITARIO", "columna": 4, "tipoDato": "CURRENCY", "formato": "#,##0.00 €" },
+          { "campo": "NUM_UNIDADES", "columna": 6, "tipoDato": "NUMBER" },
+          { "campo": "IMPORTE_TOTAL_DETALLE", "columna": 7, "tipoDato": "CURRENCY", "formato": "#,##0.00 €" }
+        ]},
+        { "tipo": "TOTAL", "filaPlantilla": 12, "campos": [
+          { "campo": "IMPORTE_BASE", "columna": 7, "tipoDato": "CURRENCY", "formato": "#,##0.00 €" }
+        ]},        
+        { "tipo": "TOTAL", "filaPlantilla": 13, "campos": [
+          { "campo": "ETIQUETA_IVA", "columna": 1 },
+          { "campo": "IMPORTE_IVA", "columna": 7, "tipoDato": "CURRENCY", "formato": "#,##0.00 €" }
+        ]},        
+        { "tipo": "TOTAL", "filaPlantilla": 14, "campos": [
+          { "campo": "IMPORTE_TOTAL", "columna": 7, "tipoDato": "CURRENCY", "formato": "#,##0.00 €" }
+        ]}
+      ]
+    }
+  ]
+}

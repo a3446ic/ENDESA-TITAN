@@ -8,34 +8,34 @@ create or replace PACKAGE BODY ENEL_ACTUALIZA_INFORMES_CCDD AS
    Ver        Date        Author           Description
    ---------  ----------  ---------------  ------------------------------------
    1.0        xx/12/2021  DCR               Created this package.
-   
+
    1.1        31.05.2022  DCR               PDS E4E (CAL0152)
-   
+
    1.2        11.10.2022  DCR               Errores E4E (CAL0230)
-   
+
    1.3        27.10.2022  DMS               Informe Liq no filtra por periodo
-   
+
    1.4        16.01.2023  RMM               Informe de prefactura genera duplicados debido a la forma en la que se generaba la
                                             tabla temporal de credito. Como solo necesitamos información del credito por el 
                                             momento procedemos a eliminar en cruce con comisiones e incentivos
-                                            
+
    1.5        18.04.2023  DCR               Activar DTM para CCDD
-   
+
    1.6        18.07.2023  APM               Modificar longitud de campos tabla ENEL_CUADRELIQ_CCDD_SLA
 
    1.7        07.03.2024  APM               Se añaden nuevos campos para Evolutivo CPs - Provincia y Apliación Incentivo CPs.   
 
    1.8        14.11.2024  APM               Campo TIPO_VENTA de la tabla ENEL_TXN_TEMP_CCDD se cambia por CREDIT.GENERICATTRIBUTE3.
-   
+
    1.9        31.01.2024  APM               Campo IMPORTE_S2S añadido a la tabla ENEL_GRALPROV_DETALLE_CCDD.
-   
+
    1.10       30.04.2025  APM               Nueva tabla para nueva pestaña 'Comprobación por WBE' del informe 3.Informe Balance_Callidus - E4E_CCDD  
-   
+
    1.11       03.06.2025  APM               Nueva tabla para nuevo informe '1.Informe Cuadre de Liquidación_Resellers' -> ENEL_CUADRELIQ_CCDD_RESELLERS
                                             Nuevo filtro en la tabla ENEL_CREDIT_TEMP_CCDD
-                                            
+
    1.12       03.03.2026  APM               Informar tablas para Informe Agrupado de liquidaciones
-   
+
    1.13       09.03.2026  APM               Revertir subida Informar tablas para Informe Agrupado de liquidaciones
 
    1.14       19.03.2026  APM               Cambios para Mas Orange
@@ -174,7 +174,7 @@ begin
     FROM CS_PERIOD PER 
     WHERE PER.PERIODSEQ=iperiodseq 
 		AND PER.REMOVEDATE = to_date('2200-01-01','YYYY-MM-DD');
-      
+
     return v_Primer_Dia;
 end;
 
@@ -185,7 +185,7 @@ begin
     FROM CS_PERIOD PER 
     WHERE PER.PERIODSEQ=iperiodseq 
 		AND PER.REMOVEDATE = to_date('2200-01-01','YYYY-MM-DD');
-      
+
 	return v_Primer_Dia;
 end;
 
@@ -196,7 +196,7 @@ begin
     FROM CS_PERIOD PER 
     WHERE PER.PERIODSEQ=iperiodseq 
 		AND PER.REMOVEDATE = to_date('2200-01-01','YYYY-MM-DD');
-      
+
 	return v_Ultimo_Dia;
 end;
 
@@ -208,7 +208,7 @@ begin
     FROM CS_PERIOD PER 
     WHERE PER.PERIODSEQ=iperiodseq 
 		AND PER.REMOVEDATE = to_date('2200-01-01','YYYY-MM-DD');
-      
+
 	return v_Primer_Dia;
 end;
 
@@ -220,7 +220,7 @@ begin
     FROM CS_PERIOD PER 
     WHERE PER.PERIODSEQ=iperiodseq 
 		AND PER.REMOVEDATE = to_date('2200-01-01','YYYY-MM-DD');
-      
+
 	return v_Primer_Dia;
 end;
 
@@ -232,7 +232,7 @@ begin
     FROM CS_PERIOD PER 
     WHERE PER.PERIODSEQ=iperiodseq 
 		AND PER.REMOVEDATE = to_date('2200-01-01','YYYY-MM-DD');
-      
+
 	return v_Primer_Dia;
 end;
 
@@ -248,10 +248,10 @@ begin
 	SELECT chr(extract(month from idate) + 64)
 	INTO  v_CodigoMes
 	FROM DUAL;  
-      
+
 	return v_CodigoMes;
 end;  
-  
+
 -- EXtraer el codigo del mes : Enero: A, Febrero:B .... Diciembre:L
 -- se comprueba si el informe sobre el que se van a generar los datos pertenece a la lista de informes. Para 'ALL', se devuelve que si existe
 function f_ExisteInformeEnLista(iInforme in varchar2, iListaInformes in varchar2 ) return boolean as   
@@ -273,7 +273,7 @@ begin
     else
         w_debug(' NO ExisteInformeEnLista: '||iInforme ||' ListaInformes: '||iListaInformes ,  v_contador_debug);
     end if;
-    
+
     return v_existe;
 end;
 
@@ -392,7 +392,7 @@ begin
         TXN.GENERICATTRIBUTE25, --APM 03.06.2025
         TXN.PRODUCTNAME, --APM 03.06.2025
         TXN.GENERICDATE6 AS GENERICDATE6 --APM 03.06.2025
-        
+
 
 	FROM CS_SALESTRANSACTION txn
 		INNER JOIN CS_SALESORDER ordtxn
@@ -403,12 +403,12 @@ begin
 			AND txn.compensationdate BETWEEN v_periodstartdate AND v_periodenddate
 			AND TXN.MODELSEQ = 0
 			AND TXN.PROCESSINGUNITSEQ = iprocessingUnitSeq
-			
+
 		INNER JOIN CS_EVENTTYPE etype
 			ON TXN.EVENTTYPESEQ = etype.DATATYPESEQ
 			AND ETYPE.REMOVEDATE  = v_eot
 			AND txn.tenantid = etype.tenantid
-			
+
 		LEFT JOIN CS_GASALESTRANSACTION etxn0   
 			ON txn.SALESTRANSACTIONSEQ = etxn0.SALESTRANSACTIONSEQ
 			AND etxn0.tenantid = txn.tenantid
@@ -427,7 +427,7 @@ begin
 			AND txn.processingunitseq = txnadd.processingunitseq
 			AND txnadd.tenantid = txn.tenantid
 			AND txn.compensationdate = txnadd.compensationdate
-                                               
+
 		LEFT JOIN CS_TRANSACTIONASSIGNMENT txnass
 			ON txn.SALESTRANSACTIONSEQ  = txnass.SALESTRANSACTIONSEQ   
 			AND txn.processingunitseq = txnass.processingunitseq
@@ -525,18 +525,18 @@ begin
 		INNER JOIN CS_PLRUN p 
 			ON CREDIT.PIPELINERUNSEQ = P.PIPELINERUNSEQ 
 			AND P.MODELSEQ = 0   -- Solo se tienen en cuenta las ejecuciones que no son de simulacion
-                                             
+
 		INNER JOIN CS_CREDITTYPE ctype 
 			ON credit.CREDITTYPESEQ = ctype.DATATYPESEQ 
 			AND ctype.TENANTID = itenantId
 			AND ctype.REMOVEDATE  = v_eot
-		
+
 		LEFT JOIN CS_COMMISSION COMMI
             ON COMMI.CREDITSEQ = CREDIT.CREDITSEQ
             AND COMMI.PAYEESEQ = CREDIT.PAYEESEQ
             AND COMMI.PERIODSEQ= CREDIT.PERIODSEQ --APM 18.07.2025
             and credit.name like '%Resellers -%'
-        
+
 		LEFT JOIN CS_INCENTIVE INCE 
 			ON INCE.INCENTIVESEQ = COMMI.INCENTIVESEQ  -- RMM : 16.01.2023 Se elimina este cruce  para evitar duplicado ya que actualmente
             --al cruzar con comisiones se estan encontrado 2 entradas por credito y en principio solo mostramos información del credito       
@@ -544,8 +544,8 @@ begin
             AND ince.positionseq = commi.positionseq
             AND ince.periodseq = commi.periodseq
             AND ince.pipelinerunseq = commi.pipelinerunseq
-            
-            
+
+
 	WHERE
 		credit.TENANTID = itenantId 
 		AND credit.PROCESSINGUNITSEQ = iprocessingUnitSeq 
@@ -725,7 +725,7 @@ begin
     v_ultimo_dia_periodo := f_Ultimo_Dia_Periodo(iperiodseq);
 
     w_debug('Cargando tabla ENEL_PROVEEDORES_TEMP_CCDD. Periodo:'|| iperiod ||' Periodseq: '||iperiodseq ||' TenantId: '||itenantId || ' Ult.Dia Period:' || v_ultimo_dia_periodo,  v_contador_debug);
-      
+
 	INSERT INTO ENELEXT.ENEL_PROVEEDORES_TEMP_CCDD( TENANTID,PERIODSEQ,IDPROVEEDOR,DESCRIPCION,DESCRIPCION_CORTA, FICHERO, CECO, WBE_FINAL_IMPUTACION, DETALLE_ACTIVIDAD, ACTIVIDAD,
 													SOCIEDAD, CENTRO_LOGISTICO,GR_COMPRAS,TIPO_PAGO, ORG_VENTAS, FECHA_INICIO_VIGOR,FECHA_FIN_VIGOR, SUBACTIVIDAD)
 	SELECT 
@@ -747,7 +747,7 @@ begin
 		C.EFFECTIVESTARTDATE FECHA_INICIO_VIGOR,
 		C.EFFECTIVEENDDATE FECHA_FIN_VIGOR,
 		GC.GENERICATTRIBUTE10
-	
+
 	FROM CS_GENERICCLASSIFIERTYPE GCT
 		INNER JOIN CS_CLASSIFIER C ON GCT.GENERICCLASSIFIERTYPESEQ = C.SELECTORID
 			AND C.TENANTID = itenantId 
@@ -762,11 +762,11 @@ begin
             AND GC.EFFECTIVESTARTDATE <= v_ultimo_dia_periodo
             AND GC.EFFECTIVEENDDATE >= v_ultimo_dia_periodo              
 			--AND GC.ISLAST = 1
-	
+
 	WHERE GCT.NAME  like 'Proveedor%'
 		AND GC.GENERICATTRIBUTE4 not like '%TELEVENTA'
 	;
-    
+
 	filas := sql%rowcount;
     COMMIT;
 
@@ -861,7 +861,7 @@ begin
 			EXIT WHEN SQL%ROWCOUNT = 0;
 			COMMIT;
 		END LOOP;
-		
+
 		LOOP
 			DELETE FROM ENELEXT.ENEL_E4E_NEGATIVOS_TMP2_CCDD WHERE PERIODO = iperiod AND ROWNUM <= 10000;
 			EXIT WHEN SQL%ROWCOUNT = 0;
@@ -936,7 +936,7 @@ begin
 			AND TMP_CONTRA.PDS = TMP_PDS.PDS                 
 			AND TMP_CONTRA.ACTIVIDAD_DETALLADA=TMP_PROV.DETALLE_ACTIVIDAD
 			AND TMP_CONTRA.periodseq=TMP_PROV.periodseq
- 
+
 	WHERE DEPO.TENANTID = itenantId
 		AND DEPO.periodseq=iperiodseq        
 		AND DEPO.VALUE < 0  -- Se incluyen los depositos negativos para el informe de Balance de Pagos y se filtran al generar los ficheros E4E y ECS  
@@ -975,13 +975,13 @@ begin
 		TMP_PROV.ORG_VENTAS,
 		TMP_CONTRA.CONDICIONES_PAGO
 	;
-		  
+
 	filas := sql%rowcount;
 	COMMIT;
 
     w_debug('Fin Carga de la tabla ENEL_E4E_NEGATIVOS_TMP2_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_E4E_NEGATIVOS_TMP2_CCDD.',v_contador_debug);
-	
+
 	w_debug('Origen de ENEL_E4E_NEGATIVOS_TMP2_CCDD : CS_DEPOSIT.', v_contador_debug);
 	INSERT INTO ENELEXT.ENEL_E4E_NEGATIVOS_TMP2_CCDD  ( PERIODSEQ,PERIODO, DEPOSITSEQ,POSITIONSEQ,PAYEESEQ,VALUE,PDS, PAR_PROVEEDOR,NOMBRE_FISCAL, CIF, TIPO_IMPOSITIVO, 
 														COD_CONTRATO,POS_DOC, TEXTO_BREVE,ORG_COMPRAS,CODIGO_SERVICIO, IDPROVEEDOR, FICHERO, SOCIEDAD,CECO,
@@ -1043,7 +1043,7 @@ begin
 			AND TMP_CONTRA.PDS = TMP_PDS.PDS                 
 			--AND TMP_CONTRA.ACTIVIDAD_DETALLADA=TMP_PROV.DETALLE_ACTIVIDAD
 			AND TMP_CONTRA.periodseq=TMP_PROV.periodseq
- 
+
 	WHERE DEPO.TENANTID = itenantId
 		AND DEPO.periodseq=iperiodseq        
 		--AND DEPO.VALUE < 0  -- Se incluyen los depositos negativos para el informe de Balance de Pagos y se filtran al generar los ficheros E4E y ECS  
@@ -1169,7 +1169,7 @@ begin
     v_ultimo_dia_periodo := f_Ultimo_Dia_Periodo(iperiodseq);
 
     w_debug('Cargando tabla ENEL_E4E_CONTRATOS_TEMP_CCDD. Periodo:'|| iperiod ||' Periodseq: '||iperiodseq ||' TenantId: '||itenantId || ' Ult.Dia Period:' || v_ultimo_dia_periodo,  v_contador_debug);
-      
+
 	INSERT INTO ENELEXT.ENEL_E4E_CONTRATOS_TEMP_CCDD   (TENANTID,PERIODSEQ,ID,PDS,ACTIVIDAD_DETALLADA,ACTIVIDAD, CIF,COD_CONTRATO,POS_DOC,TEXTO_BREVE,CODIGO_SERVICIO,
 														ORG_COMPRAS,CONDICIONES_PAGO, FECHA_INICIO_VIGOR,FECHA_FIN_VIGOR,CECO)
 	SELECT 
@@ -1291,7 +1291,7 @@ begin
 			AND pos.EFFECTIVEENDDATE >= PER.ENDDATE - 1
 			-- and POS.ISLAST = 1   -- Con esta condición no se quedaba con la versión correcta asociada al fichero
 			and POS.PROCESSINGUNITSEQ = iprocessingUnitSeq
-			  
+
 		INNER JOIN CS_PARTICIPANT par 
 			ON POS.PAYEESEQ = PAR.PAYEESEQ
 			AND par.TENANTID = itenantId
@@ -1312,7 +1312,7 @@ begin
 			AND TIT.REMOVEDATE = v_eot
 			AND TIT.EFFECTIVESTARTDATE <= PER.ENDDATE - 1
 			AND TIT.EFFECTIVEENDDATE >= PER.ENDDATE - 1
-				
+
 	WHERE
 		per.REMOVEDATE = v_eot
 		AND per.PERIODSEQ = iperiodseq
@@ -1387,7 +1387,7 @@ New Code */
 		TMP_PROV.ORG_VENTAS,
 		TMP_CONTRA.CONDICIONES_PAGO,
         BU.NAME
-          
+
 	FROM  ENELEXT.enel_deposit_temp_CCDD DEPO				 
 		INNER JOIN ENELEXT.ENEL_PDS_TEMP_CCDD TMP_PDS 
 			ON depo.payeeseq=TMP_PDS.payeeseq 
@@ -1409,18 +1409,18 @@ AND TMP_CONTRA.PDS = TMP_PDS.PDS
 /* EOM - DCR - 11.10.2022 - Errores E4E (CAL0230) */
 			AND TMP_CONTRA.ACTIVIDAD_DETALLADA=TMP_PROV.DETALLE_ACTIVIDAD --APM 22.07.2025 Se descomenta.
 			AND TMP_CONTRA.periodseq=TMP_PROV.periodseq
-			
+
 		INNER JOIN CS_BUSINESSUNIT BU 
 			ON DEPO.BUSINESSUNITMAP = BU.MASK
 			AND BU.TENANTID = itenantId
-             
+
 	WHERE 
 		DEPO.TENANTID = itenantId
 		AND DEPO.periodseq=iperiodseq        
 		AND DEPO.PROCESSINGUNITSEQ =  iprocessingUnitSeq
 		and depo.tipo_pago_ga5 is not null
 		and depo.value > 0  
-		
+
 	GROUP BY 
 		DEPO.PERIODSEQ, 
 		DEPO.POSITIONSEQ, 
@@ -1453,7 +1453,7 @@ New Code */
 		TMP_PROV.ORG_VENTAS,
 		TMP_CONTRA.CONDICIONES_PAGO,
 		BU.NAME;
-        
+
 	filas := sql%rowcount;
 	COMMIT;
 
@@ -1461,11 +1461,11 @@ New Code */
 
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_E4E_DEPOSIT_CCDD_TEMP',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_E4E_DEPOSIT_CCDD_TEMP.',v_contador_debug);
-	
+
 	w_debug('Cargando tabla ENEL_E4E_DEPOSIT_CCDD_TEMP_2. Periodo:'|| iperiod ||' Periodseq: '||iperiodseq ||' TenantId: '||itenantId ,  v_contador_debug);
 
 	w_debug('Origen de ENEL_E4E_DEPOSIT_CCDD_TEMP_2 : ', v_contador_debug);
-                   
+
     INSERT INTO ENELEXT.ENEL_E4E_DEPOSIT_CCDD_TEMP_2  ( PERIODSEQ,POSITIONSEQ,PAYEESEQ,VALUE,PDS, PAR_PROVEEDOR,TIPO_IMPOSITIVO,COD_CONTRATO,POS_DOC, TEXTO_BREVE,ORG_COMPRAS, 
 														CODIGO_SERVICIO, IDPROVEEDOR,SOCIEDAD,CECO, DESCRIPCION,GR_COMPRAS,CENTRO_LOGISTICO,WBE_FINAL_IMPUTACION,ACTIVIDAD, 
 														TIPO_PAGO, POS_FECHA_INI_VIGENCIA, VALOR_OPERACIONES, CODIGODEUDOR,COMUNIDAD_AUTONOMA, ORG_VENTAS,CONDICIONES_PAGO, 
@@ -1505,7 +1505,7 @@ New Code */
 		TMP_PROV.ORG_VENTAS,
 		TMP_CONTRA.CONDICIONES_PAGO,
         BU.NAME
-          
+
 	FROM  ENELEXT.enel_deposit_temp_CCDD DEPO				 
 		INNER JOIN ENELEXT.ENEL_PDS_TEMP_CCDD TMP_PDS 
 			ON depo.payeeseq=TMP_PDS.payeeseq 
@@ -1526,7 +1526,7 @@ New Code */
 /* EOM - DCR - 11.10.2022 - Errores E4E (CAL0230) */
 			AND TMP_CONTRA.ACTIVIDAD_DETALLADA=TMP_PROV.DETALLE_ACTIVIDAD
 			AND TMP_CONTRA.periodseq=TMP_PROV.periodseq
-			
+
 		INNER JOIN CS_BUSINESSUNIT BU 
 			ON DEPO.BUSINESSUNITMAP = BU.MASK
 			AND BU.TENANTID = itenantId
@@ -1570,7 +1570,7 @@ New Code */
 		TMP_PROV.ORG_VENTAS,
 		TMP_CONTRA.CONDICIONES_PAGO,
 		BU.NAME;   
-        
+
 	filas := sql%rowcount;
 	COMMIT;
 
@@ -1654,7 +1654,7 @@ begin
     v_finicio := current_timestamp();
 
     w_debug('Inicio Borrado de la tabla ENEL_E4E_FINAL_CCDD.', v_contador_debug);
-    
+
     --v_codFichero :='E4E1';  -- v2.0 se asigna el valor dinamicamente en función de la actividad del proveedor
 	-- EXECUTE IMMEDIATE 'DELETE ENELEXT.ENEL_E4E_FINAL WHERE ....';
     BEGIN
@@ -1676,16 +1676,16 @@ begin
     v_codMes := f_CodigoMes(v_fechaInicioPeriodo);
     -- Se convierte a texto la fecha actual en formato DD/MM/YYYY para los registros de salida
     v_txtFechaActual := to_char(sysdate, 'DD/MM/YYYY');
-    
+
     w_debug('Referencia fechas. Periodo:'|| iperiod ||' FechaInicioPeriodo Siguiente: '||v_txtFechaInicioPeriodo ||' YY: '||v_txtYear ||' codMes: '||v_codMes || ' FechaActual ' || v_txtFechaActual ,  v_contador_debug);
-    
+
     w_debug('Cargando tabla ENEL_E4E_FINAL_CCDD. Periodo:'|| iperiod ||' Periodseq: '||iperiodseq ||' TenantId: '||itenantId ,  v_contador_debug);
     w_debug('Insertando Registros de datos en tabla ENEL_E4E_FINAL_CCDD. Fichero ' || v_codFichero ,  v_contador_debug);
-    
+
     contadorE4E := 4;
     contadorECS := 4;
     contadorPosicion := 10;
-     
+
     DECLARE
         CURSOR C_TMPDEPOSITOS IS
             SELECT 
@@ -1736,13 +1736,13 @@ begin
                 CODIGO_SERVICIO,
                 BUSINESSUNIT
             order by pds, idproveedor;
-            
+
 		REGDEPOSITO C_TMPDEPOSITOS%ROWTYPE;
-            
+
     BEGIN
         OPEN C_TMPDEPOSITOS;
         FETCH C_TMPDEPOSITOS INTO REGDEPOSITO;
-        
+
         WHILE C_TMPDEPOSITOS%FOUND
         LOOP
 			-- Código de fichero
@@ -1754,7 +1754,7 @@ begin
                 WHEN 'ATC'          THEN v_codFichero :='ECS1';
                 ELSE                     v_codFichero :='NOT1';
             END CASE;
-                
+
             -- Se concatenan los valores que forman el código de referencia:
             --    YY + Codigo de PDS + Código de proveedor + Código de Mes (Enero = A, Febrero = B ...)
             v_referencia := v_txtYear || REGDEPOSITO.PDS || REGDEPOSITO.IDPROVEEDOR || v_codMes;
@@ -1769,17 +1769,17 @@ begin
 /* EOM CAL0152 31.05.2022 DCR */                
                 ELSE                     v_Impuesto := '';
             END CASE;
-            
+
             -- Se determina la fecha de inicio
             IF REGDEPOSITO.POS_FECHA_INI_VIGENCIA > v_fechaInicioPeriodo THEN
                 v_txtFechaInicio := to_char(REGDEPOSITO.POS_FECHA_INI_VIGENCIA, 'DD/MM/YYYY');
             ELSE
                 v_txtFechaInicio := v_txtFechaInicioPeriodo;
             END IF;
-            
+
             -- MPR - Se concatenan los valores que forman el código para que solo cargue una cabecera por pds + proveedor, independientemente de las wbe:
             -- Codigo de PDS + Código de proveedor
-           
+
             IF v_cabecera is null then
                 -- Registro de DATOS - CABECERA
                 IF v_codFichero = 'E4E1' then
@@ -1789,7 +1789,7 @@ begin
                     contadorECS := contadorECS +1;
                     contadorTabla := contadorECS;
                 END IF;    
-            
+
                 INSERT INTO ENEL_E4E_FINAL_CCDD (PERIODO, ORDEN, CAMPO1, CAMPO2, CAMPO3, CAMPO4, CAMPO5, CAMPO6, CAMPO7, CAMPO8, CAMPO9, CAMPO10, 
 												CAMPO11, CAMPO12, CAMPO13, CAMPO14, CAMPO15, CAMPO16, CAMPO17, CAMPO18, CAMPO19, CAMPO20, CAMPO21, CAMPO22, FICHERO, BUSINESSUNIT)
                 VALUES ( iperiod,
@@ -1809,7 +1809,7 @@ begin
                     '',
                     'RE',
                     '','','','','','','','',v_codFichero,REGDEPOSITO.BUSINESSUNIT);
-                    
+
             ELSIF v_cabecera <> REGDEPOSITO.PDS || REGDEPOSITO.IDPROVEEDOR then
                 -- Registro de DATOS - CABECERA
                 IF v_codFichero = 'E4E1' then
@@ -1819,7 +1819,7 @@ begin
                     contadorECS := contadorECS +1;
                     contadorTabla := contadorECS;
                 END IF;    
-            
+
                 INSERT INTO ENEL_E4E_FINAL_CCDD (PERIODO, ORDEN, CAMPO1, CAMPO2, CAMPO3, CAMPO4, CAMPO5, CAMPO6, CAMPO7, CAMPO8, CAMPO9, CAMPO10, 
                                                 CAMPO11, CAMPO12, CAMPO13, CAMPO14, CAMPO15, CAMPO16, CAMPO17, CAMPO18, CAMPO19, CAMPO20, CAMPO21, CAMPO22, FICHERO, BUSINESSUNIT)
                 VALUES ( iperiod,
@@ -1839,12 +1839,12 @@ begin
                     '',
                     'RE',
                     '','','','','','','','',v_codFichero,REGDEPOSITO.BUSINESSUNIT);
-                    
+
                     contadorPosicion := 10;
             ELSE
                 contadorPosicion := contadorPosicion+10;
             END IF;
-            
+
             -- Registro de DATOS - POSICION
             IF v_codFichero = 'E4E1' then
                 contadorE4E := contadorE4E +1;
@@ -1853,7 +1853,7 @@ begin
                 contadorECS := contadorECS +1;
                 contadorTabla := contadorECS;
             END IF; 
-            
+
             INSERT INTO ENEL_E4E_FINAL_CCDD (PERIODO, ORDEN, CAMPO1, CAMPO2, CAMPO3, CAMPO4, CAMPO5, CAMPO6, CAMPO7, CAMPO8, CAMPO9, CAMPO10,  
 											CAMPO11, CAMPO12, CAMPO13, CAMPO14, CAMPO15, CAMPO16, CAMPO17, CAMPO18, CAMPO19, CAMPO20, CAMPO21, CAMPO22, FICHERO, BUSINESSUNIT)
             VALUES ( iperiod,
@@ -1887,7 +1887,7 @@ begin
                     contadorECS := contadorECS +1;
                     contadorTabla := contadorECS;
                 END IF; 
-            
+
                 INSERT INTO ENEL_E4E_FINAL_CCDD (PERIODO, ORDEN, CAMPO1, CAMPO2, CAMPO3, CAMPO4, CAMPO5, CAMPO6, CAMPO7, CAMPO8, CAMPO9, CAMPO10, 
 												CAMPO11, CAMPO12, CAMPO13, CAMPO14, CAMPO15, CAMPO16, CAMPO17, CAMPO18, CAMPO19, CAMPO20, CAMPO21, CAMPO22, FICHERO, BUSINESSUNIT)
                 VALUES ( iperiod,
@@ -1910,24 +1910,24 @@ begin
                     v_codFichero,REGDEPOSITO.BUSINESSUNIT);
 
             END IF;
-            
+
             v_cabecera := REGDEPOSITO.PDS || REGDEPOSITO.IDPROVEEDOR;
-            
+
 		FETCH C_TMPDEPOSITOS INTO REGDEPOSITO;
         END LOOP;    
         CLOSE C_TMPDEPOSITOS;
     END;
-    
+
     --Si se han insertado registros de datos de E4E, se insertan los registros de cabecera para el fichero E4E2
     if contadorE4E > 4 THEN
         p_Cabecera_Ficheros_E4E (  iperiod , 'E4E1' );
     end if;
-    
+
     --Si se han insertado registros de datos ECS, se insertan los registros de cabecera para el fichero ECS2
     if contadorECS > 4 THEN
         p_Cabecera_Ficheros_E4E (  iperiod , 'ECS1' );
     end if;   
-    
+
     w_debug('Fin Carga de la tabla ENEL_E4E_FINAL_CCDD:  E4E1'|| to_char(contadorE4E) || ' -- ECS1'|| to_char(contadorECS) || ' filas.', v_contador_debug);
 
     z_ctrl_inf(v_contador_ctrl_inf, v_num_ejecucion, 'p_Final_E4E_1', v_finicio, current_timestamp(), null);
@@ -1980,17 +1980,17 @@ begin
     v_codMes := f_CodigoMes(v_fechaInicioPeriodo);
     -- Se convierte a texto la fecha actual en formato DD/MM/YYYY para los registros de salida
     v_txtFechaActual := to_char(sysdate, 'DD/MM/YYYY');
-    
+
     w_debug('Referencia fechas. Periodo:'|| iperiod ||' FechaInicioPeriodo Siguiente: '||v_txtFechaInicioPeriodo ||' YY: '||v_txtYear ||' codMes: '||v_codMes || ' FechaActual ' || v_txtFechaActual ,  v_contador_debug);
-    
+
     w_debug('Cargando tabla ENEL_E4E_FINAL_CCDD. Periodo:'|| iperiod ||' Periodseq: '||iperiodseq ||' TenantId: '||itenantId ,  v_contador_debug);
 
     w_debug('Insertando Registros de datos en tabla ENEL_E4E_FINAL_CCDD. Fichero ' || v_codFichero ,  v_contador_debug);
-    
+
     contadorE4E := 4;
     contadorECS := 4;
     contadorPosicion := 10;
-     
+
     DECLARE
         CURSOR C_TMPDEPOSITOS IS
             SELECT 
@@ -2041,12 +2041,12 @@ begin
                 CODIGO_SERVICIO,
                 BUSINESSUNIT
             order by pds, idproveedor;
-                
+
 	REGDEPOSITO C_TMPDEPOSITOS%ROWTYPE;
     BEGIN
         OPEN C_TMPDEPOSITOS;
         FETCH C_TMPDEPOSITOS INTO REGDEPOSITO;
-        
+
         WHILE C_TMPDEPOSITOS%FOUND
         LOOP    
             -- Código de fichero
@@ -2058,7 +2058,7 @@ begin
                 WHEN 'ATC'          THEN v_codFichero :='ECS2';
                 ELSE                     v_codFichero :='NOT2';
             END CASE;
-            
+
             -- Se concatenan los valores que forman el código de referencia:
             --    YY + Codigo de PDS + Código de proveedor + Código de Mes (Enero = A, Febrero = B ...)
             v_referencia := v_txtYear || REGDEPOSITO.PDS || REGDEPOSITO.IDPROVEEDOR || v_codMes;
@@ -2073,17 +2073,17 @@ begin
 /* EOM CAL0152 31.05.2022 DCR */   
                 ELSE                     v_Impuesto := '';
             END CASE;
-            
+
             -- Se determina la fecha de inicio
             IF REGDEPOSITO.POS_FECHA_INI_VIGENCIA > v_fechaInicioPeriodo THEN
                 v_txtFechaInicio := to_char(REGDEPOSITO.POS_FECHA_INI_VIGENCIA, 'DD/MM/YYYY');
             ELSE
                 v_txtFechaInicio := v_txtFechaInicioPeriodo;
             END IF;
-             
+
             -- MPR - Se concatenan los valores que forman el código para que solo cargue una cabecera por pds + proveedor, independientemente de las wbe:
             -- Codigo de PDS + Código de proveedor
-           
+
             IF v_cabecera is null then
                 -- Registro de DATOS - CABECERA
                 IF v_codFichero = 'E4E2' then
@@ -2093,7 +2093,7 @@ begin
 					contadorECS := contadorECS +1;
 					contadorTabla := contadorECS;
 				END IF;          
-            
+
                 INSERT INTO ENEL_E4E_FINAL_CCDD (PERIODO, ORDEN, CAMPO1, CAMPO2, CAMPO3, CAMPO4, CAMPO5, CAMPO6, CAMPO7, CAMPO8, CAMPO9, CAMPO10, 
                                                 CAMPO11, CAMPO12, CAMPO13, CAMPO14, CAMPO15, CAMPO16, CAMPO17, CAMPO18, CAMPO19, CAMPO20, CAMPO21, CAMPO22, FICHERO, BUSINESSUNIT)
                 VALUES ( iperiod,
@@ -2113,7 +2113,7 @@ begin
                     '',
                     'RE',
                     '','','','','','','','',v_codFichero,REGDEPOSITO.BUSINESSUNIT);
-                    
+
             ELSIF v_cabecera <> REGDEPOSITO.PDS || REGDEPOSITO.IDPROVEEDOR then
                 -- Registro de DATOS - CABECERA
                 IF v_codFichero = 'E4E2' then
@@ -2123,7 +2123,7 @@ begin
 					contadorECS := contadorECS +1;
 					contadorTabla := contadorECS;
 				END IF; 
-            
+
                 INSERT INTO ENEL_E4E_FINAL_CCDD (PERIODO, ORDEN, CAMPO1, CAMPO2, CAMPO3, CAMPO4, CAMPO5, CAMPO6, CAMPO7, CAMPO8, CAMPO9, CAMPO10, 
                                                 CAMPO11, CAMPO12, CAMPO13, CAMPO14, CAMPO15, CAMPO16, CAMPO17, CAMPO18, CAMPO19, CAMPO20, CAMPO21, CAMPO22, FICHERO, BUSINESSUNIT)
                 VALUES ( iperiod,
@@ -2143,7 +2143,7 @@ begin
                     '',
                     'RE',
                     '','','','','','','','',v_codFichero,REGDEPOSITO.BUSINESSUNIT);
-                    
+
                     contadorPosicion := 10;
             ELSE
                 contadorPosicion := contadorPosicion+10;
@@ -2157,7 +2157,7 @@ begin
                 contadorECS := contadorECS +1;
                 contadorTabla := contadorECS;
             END IF; 
-            
+
             INSERT INTO ENEL_E4E_FINAL_CCDD (PERIODO, ORDEN, CAMPO1, CAMPO2, CAMPO3, CAMPO4, CAMPO5, CAMPO6, CAMPO7, CAMPO8, CAMPO9, CAMPO10, 
                                        CAMPO11, CAMPO12, CAMPO13, CAMPO14, CAMPO15, CAMPO16, CAMPO17, CAMPO18, CAMPO19, CAMPO20, CAMPO21, CAMPO22, FICHERO, BUSINESSUNIT)
 			VALUES ( iperiod,
@@ -2191,7 +2191,7 @@ begin
 					contadorECS := contadorECS +1;
 					contadorTabla := contadorECS;
                 END IF;
-             
+
                 INSERT INTO ENEL_E4E_FINAL_CCDD (PERIODO, ORDEN, CAMPO1, CAMPO2, CAMPO3, CAMPO4, CAMPO5, CAMPO6, CAMPO7, CAMPO8, CAMPO9, CAMPO10, 
                                        CAMPO11, CAMPO12, CAMPO13, CAMPO14, CAMPO15, CAMPO16, CAMPO17, CAMPO18, CAMPO19, CAMPO20, CAMPO21, CAMPO22, FICHERO, BUSINESSUNIT)
 				VALUES ( iperiod,
@@ -2214,14 +2214,14 @@ begin
 					v_codFichero,REGDEPOSITO.BUSINESSUNIT);
 
             END IF;
-            
+
             v_cabecera := REGDEPOSITO.PDS || REGDEPOSITO.IDPROVEEDOR;
-                        
+
         FETCH C_TMPDEPOSITOS INTO REGDEPOSITO;        
         END LOOP;               
         CLOSE C_TMPDEPOSITOS;
     END;
-    
+
     --Si se han insertado registros de datos de E4E, se insertan los registros de cabecera para el fichero E4E2
     if contadorE4E > 4 THEN    
         p_Cabecera_Ficheros_E4E (  iperiod , 'E4E2' );
@@ -2230,7 +2230,7 @@ begin
     if contadorECS > 4 THEN
         p_Cabecera_Ficheros_E4E (  iperiod , 'ECS2' );
     end if;   
-    
+
 	w_debug('Fin Carga de la tabla ENEL_E4E_FINAL_CCDD:  E4E2'|| to_char(contadorE4E) || ' -- ECS2'|| to_char(contadorECS) || ' filas.', v_contador_debug);
 
     z_ctrl_inf(v_contador_ctrl_inf, v_num_ejecucion, 'p_Final_E4E_2', v_finicio, current_timestamp(), null);
@@ -2264,26 +2264,26 @@ begin
 
     -- Se extrae la fecha inicial del siguiente mes al periodSeq del proceso
     v_fechaInicioPeriodoSig :=  f_Primer_Dia_Periodo_Siguiente(iperiodseq);
-    
+
     -- Se convierte a texto en formato DD/MM/YYYY para los registros de salida
     v_txtFechaInicioPeriodoSig := to_char(v_fechaInicioPeriodoSig, 'DD/MM/YYYY');
-    
+
     -- Se convierte a texto el año YY para el código de referencia
     v_txtYear := to_char(v_fechaInicioPeriodoSig, 'YY');
-    
+
     -- Se extrae el código asociado al mes, donde Enero = A, Febrero = B, ... Diciembre = L
     v_codMes := f_CodigoMes(v_fechaInicioPeriodoSig);
-    
+
     -- Se convierte a texto la fecha actual en formato DD/MM/YYYY para los registros de salida
     v_txtFechaActual := to_char(sysdate, 'DD/MM/YYYY');
-    
+
     w_debug('Referencia fechas. Periodo:'|| iperiod ||' FechaInicioPeriodo Siguiente: '||v_txtFechaInicioPeriodoSig ||' YY: '||v_txtYear ||' codMes: '||v_codMes || ' FechaActual ' || v_txtFechaActual ,  v_contador_debug);
 
     select NVL(MAX(IDPEDIDO),0) into v_maxIDPEDIDO  from ENEL_E4E_NEGATIVOS_CCDD WHERE ESTADO='LIQUIDADO';
     w_debug('Numero máximo de pedido E4E Negativos Liquidado: ' || to_char(v_maxIDPEDIDO) ,  v_contador_debug);
-    
+
     w_debug('Insertando Registros de datos en tabla ENEL_E4E_NEGATIVOS_CCDD.' ,  v_contador_debug);
-    
+
 	INSERT INTO ENELEXT.ENEL_E4E_NEGATIVOS_CCDD   ( PERIODSEQ, PERIODO, DEPOSITSEQ, POSITIONSEQ, PAYEESEQ, PDS, IDPEDIDO, ORG_VENTAS, CANAL_DISTRIBUCION, 
 													SECTOR, CLASE_PEDIDO, FACTURA_REF, SOLICITANTE_SHIPTO, SOLICITANTE_SOLDTO, NUM_PEDIDO, FECHAPEDIDO, FECHAFACTURA, 
 													CONDICIONES_PAGO, CONTRATOSEPA, MOTIVOPEDIDO, MONEDA, POSICION, MATERIAL, TEXTO_MATERIAL, CANTIDAD, PRECIO, 
@@ -2383,13 +2383,13 @@ begin
 		END LOOP;
 	END;
     w_debug('Fin Borrado de la tabla ENEL_SCAWEB_LIQUIDACION_CCDD.', v_contador_debug);
-    
+
     -- Fecha de Alta se corresponde con la fecha de sistema
     vFechaAlta := SYSDATE;
-    
+
     -- Se extrae la fecha inicial del siguiente mes al periodSeq del proceso
     v_fecInicioPeriodoSig :=  f_Primer_Dia_Periodo_Siguiente(iperiodseq);
-        
+
     w_debug('Insertando CREDITOS de datos en tabla ENEL_SCAWEB_LIQUIDACION_CCDD.' ,  v_contador_debug);
     -- v2.0 Se cambia la tabla de origen CS_CREDIT  a la temporal ENEL_CREDIT_TEMP
 	INSERT INTO ENELEXT.ENEL_SCAWEB_LIQUIDACION_CCDD ( PERIODO, PROVEEDOR, ANO_LIQUIDACION, MES_LIQUIDACION, CODIGO_AGENTE_INTERNO, CONCEPTO, CANTIDAD, 
@@ -2403,7 +2403,7 @@ begin
 		to_char(v_fecInicioPeriodoSig, 'YYYY'),  -- Año del periodo sigiente
 		--to_char(credit.COMPENSATIONDATE, 'MM'),
 		to_char(v_fecInicioPeriodoSig, 'MM'),  -- Mes del periodo sigiente
-		
+
 		credtmp.GENERICATTRIBUTE4,      -- Prestador - PDS
 		credtmp.GENERICATTRIBUTE1,      -- Concepto Liquidación
 		1 as CANTIDAD,
@@ -2425,7 +2425,7 @@ begin
         /*EOM APM 21.07.2025*/
 		CREDTMP.NAME,
 		CREDITSEQ
-		
+
 	FROM ENEL_CREDIT_TEMP_CCDD credtmp
 	   INNER JOIN ENEL_PDS_TEMP_CCDD TMP_PDS     -- Se hace JOIN CON PDS para poder filtar los de TIPO OCAP y Proveedor 050 que no se deben incluir
 			ON credtmp.POSITIONSEQ=TMP_PDS.RULEELEMENTOWNERSEQ
@@ -2436,7 +2436,7 @@ begin
 		and NOT ( credtmp.GENERICATTRIBUTE2 ='050' AND TMP_PDS.TIPO_POSICION ='OCAP')   -- No se incluyen Creditos de OCAPS y proveedor 050
 		and (TMP_PDS.SUBCANAL='CCDD'
         or TMP_PDS.SUBCANAL='RESELLERS') --APM 16.07.2025
-	
+
 	group by
 		iperiod,        
 		--credit.GENERICATTRIBUTE2,      -- Proveedor,
@@ -2485,11 +2485,11 @@ begin
 		''  as Codigo_Postal,       --Codigo Postal
 		''  as Provincia,     --Provincia
 		incentmp.VALUE  as REALVALUE    -- Valor real sin tomar el valor absoluto para informe de revisión
-		
+
 	FROM ENEL_INCEN_TEMP_CCDD incentmp
 		INNER JOIN ENEL_PDS_TEMP_CCDD TMP_PDS
 			ON incentmp.POSITIONSEQ=TMP_PDS.RULEELEMENTOWNERSEQ
-			
+
 	WHERE
 		incentmp.GENERICATTRIBUTE1 is not null  -- Solo se  incluyen los créditos con Concepto de Liquidación que no son vacios (nulos)  
 		and incentmp.VALUE <> 0  -- Se filtran los incentivos que sean distintos de 0
@@ -2504,7 +2504,7 @@ begin
     COMMIT;
 
     w_debug('Fin Carga INCENTIVOS de la tabla ENEL_SCAWEB_LIQUIDACION_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
-    
+
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_SCAWEB_LIQUIDACION_CCDD',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_SCAWEB_LIQUIDACION_CCDD.',v_contador_debug);
 
@@ -2545,14 +2545,14 @@ begin
         END LOOP;
     END;
     w_debug('Fin Borrado de la tabla ENEL_PREFACTURA_CCDD_RESELLERS.', v_contador_debug);
-    
+
     -- Se extrae la fecha inicial del siguiente mes al periodSeq del proceso
     v_fechaPeriodoSiguiente :=  f_Primer_Dia_Periodo_Siguiente(iperiodseq);
     -- Se convierte a texto en formato DD/MM/YYYY para los registros de salida
     v_txtMes_Liquidacion := to_char(v_fechaPeriodoSiguiente, 'YYYYMM');
 	v_txtMes_Liquidacion2 := to_char(f_fecha_inicio(iperiodseq), 'YYYYMM');
     v_mesanio := to_char(f_fecha_inicio(iperiodseq), 'MMYY');
-	
+
 	-- SI iInterfaz es 'ACTUALIZA_INFORMES_POST_CCDD' se está generando el fichero definitivo de LIQUIDACION '
     --iInterfaz
     IF iInterfaz =  'ACTUALIZA_INFORMES_POST_CCDD'  THEN
@@ -2562,7 +2562,7 @@ begin
     END IF;
 
     w_debug('Insertando Registros de CREDITOS en tabla ENEL_PREFACTURA_CCDD.' ,  v_contador_debug);
-   
+
     INSERT INTO ENELEXT.ENEL_PREFACTURA_CCDD ( PERIODO, PERIODSEQ, MES_LIQUIDACION, FECHA_LIQUIDACION, PDS, NUMERO_RESUMEN, NOMBRE_FISCAL, CIF, IDPROVEEDOR, DESCRIPCION,
 												CONCEPTO_LIQ, TARIFA, IMPORTE_COMISION, VALUE, CONSUMO, DESCUENTO, PRODUCTO, BU_NAME, PAYEESEQ, POSITIONSEQ, CAMPANIA, LINEA_NEGOCIO,
 												POTENCIA, PVP, PORCENTAJE, IVA, UNIDAD, OFERTA, TIPO, TRAMO_CONSUMO, TRAMO_POTENCIA, SUBCATEGORIA, SERVICIO, NAME, REALIZADO, OBJETIVO,SERVICIO2,VALUE_RESELLERS  )   
@@ -2615,35 +2615,35 @@ begin
         credtmp.genericnumber2,
         CREDTMP.CREDITTYPEID as SERVICIO2,
         CREDTMP.VALUE_CREDIT AS VALUE_RESELLERS
-        
-        		
+
+
     FROM ENEL_CREDIT_TEMP_CCDD CREDTMP
         INNER JOIN ENEL_TXN_TEMP_CCDD TXNTMP 
             ON CREDTMP.SALESTRANSACTIONSEQ=TXNTMP.SALESTRANSACTIONSEQ
-        
+
         INNER JOIN ENEL_PDS_TEMP_CCDD TMP_PDS 
             ON CREDTMP.POSITIONSEQ=TMP_PDS.RULEELEMENTOWNERSEQ 
             and tmp_pds.periodseq = iperiodseq
-        
+
 /*        INNER JOIN ENEL_ORDER_IMPU_TEMP_CCDD TMP_PROV 
             ON TMP_PROV.IDPROVEEDOR=CREDTMP.GENERICATTRIBUTE4
             and TMP_PROV.periodseq = iperiodseq*/
- 
+
     WHERE 
 		CREDTMP.GENERICATTRIBUTE1 is not null  
 		and CREDTMP.NAME not like '%Incentivo%'
         and credtmp.periodseq = iperiodseq
 		--and TMP_PDS.TIPO_PRESTADOR = 'SI' -- sólo afecta a canal BP (oct. 2020)
     ;
-                
+
     filas := sql%rowcount;
     COMMIT;
-    
+
     w_debug('Fin Carga CREDITOS de la tabla ENEL_PREFACTURA_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
-    
+
 
 w_debug('Insertando Registros de CREDITOS en tabla ENEL_PREFACTURA_CCDD_RESELLERS.' ,  v_contador_debug);
-   
+
     INSERT INTO ENELEXT.ENEL_PREFACTURA_CCDD_RESELLERS ( PERIODO, PERIODSEQ, MES_LIQUIDACION, FECHA_LIQUIDACION, PDS, NUMERO_RESUMEN, NOMBRE_FISCAL, CIF, IDPROVEEDOR, DESCRIPCION,
 												CONCEPTO_LIQ, TARIFA, IMPORTE_COMISION, VALUE, CONSUMO, DESCUENTO, PRODUCTO, BU_NAME, PAYEESEQ, POSITIONSEQ, CAMPANIA, LINEA_NEGOCIO,
 												POTENCIA, PVP, PORCENTAJE, IVA, UNIDAD, OFERTA, TIPO, TRAMO_CONSUMO, TRAMO_POTENCIA, SUBCATEGORIA, SERVICIO, NAME, REALIZADO, OBJETIVO,SERVICIO2,VALUE_RESELLERS  )   
@@ -2696,16 +2696,16 @@ w_debug('Insertando Registros de CREDITOS en tabla ENEL_PREFACTURA_CCDD_RESELLER
         credtmp.genericnumber2,
         CREDTMP.GENERICATTRIBUTE3 || ' - ' || CREDTMP.GENERICATTRIBUTE1 as SERVICIO2,
         CREDTMP.VALUE_CREDIT AS VALUE_RESELLERS
-        
-        		
+
+
     FROM ENEL_CREDIT_TEMP_CCDD CREDTMP
         INNER JOIN ENEL_TXN_TEMP_CCDD TXNTMP 
             ON CREDTMP.SALESTRANSACTIONSEQ=TXNTMP.SALESTRANSACTIONSEQ
-        
+
         INNER JOIN ENEL_PDS_TEMP_CCDD TMP_PDS 
             ON CREDTMP.POSITIONSEQ=TMP_PDS.RULEELEMENTOWNERSEQ 
             and tmp_pds.periodseq = iperiodseq
-        
+
         LEFT JOIN CS_COMMISSION COMMI
             ON COMMI.CREDITSEQ = CREDTMP.CREDITSEQ
             AND COMMI.PAYEESEQ = CREDTMP.PAYEESEQ
@@ -2717,21 +2717,21 @@ w_debug('Insertando Registros de CREDITOS en tabla ENEL_PREFACTURA_CCDD_RESELLER
             AND ince.positionseq = commi.positionseq
             AND ince.periodseq = commi.periodseq
             AND ince.pipelinerunseq = commi.pipelinerunseq
- 
+
     WHERE 
 		CREDTMP.GENERICATTRIBUTE1 is not null  
 		and CREDTMP.NAME not like '%Incentivo%'
         and credtmp.periodseq = iperiodseq
 		--and TMP_PDS.TIPO_PRESTADOR = 'SI' -- sólo afecta a canal BP (oct. 2020)
     ;
-                
+
     filas := sql%rowcount;
     COMMIT;
-    
+
     w_debug('Fin Carga CREDITOS de la tabla ENEL_PREFACTURA_CCDD_RESELLERS: '|| to_char(filas) || ' filas.', v_contador_debug);
 
     w_debug('Insertando Registros de INCENTIVOS en tabla ENEL_PREFACTURA_CCDD.' ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_PREFACTURA_CCDD ( PERIODO, PERIODSEQ, MES_LIQUIDACION, FECHA_LIQUIDACION, PDS, NUMERO_RESUMEN, NOMBRE_FISCAL, CIF, IDPROVEEDOR, DESCRIPCION,
 												CONCEPTO_LIQ, TARIFA, IMPORTE_COMISION, VALUE, CONSUMO, DESCUENTO, PRODUCTO, BU_NAME, PAYEESEQ, POSITIONSEQ, CAMPANIA, LINEA_NEGOCIO,
 												POTENCIA, PVP, PORCENTAJE, IVA, UNIDAD, TIPO, REALIZADO, OBJETIVO, CONSECUCION, IMPORTE_UNITARIO,
@@ -2779,12 +2779,12 @@ w_debug('Insertando Registros de CREDITOS en tabla ENEL_PREFACTURA_CCDD_RESELLER
         INCETMP.GENERICATTRIBUTE6 as SUBCATEGORIA,
         INCETMP.GENERICNUMBER4 as PORC_APLICAR,
         INCETMP.NAME as NAME
-    
+
     FROM ENEL_INCEN_TEMP_CCDD INCETMP
         INNER JOIN ENEL_PDS_TEMP_CCDD TMP_PDS
             ON INCETMP.POSITIONSEQ=TMP_PDS.RULEELEMENTOWNERSEQ
             and tmp_pds.periodseq = iperiodseq
-      
+
 /*            
         INNER JOIN ENEL_ORDER_IMPU_TEMP_CETF TMP_PROV 
             ON TMP_PROV.IDPROVEEDOR=INCETMP.GENERICATTRIBUTE3
@@ -2802,7 +2802,7 @@ w_debug('Insertando Registros de CREDITOS en tabla ENEL_PREFACTURA_CCDD_RESELLER
     COMMIT;
 
     w_debug('Fin Carga INCENTIVOS de la tabla ENEL_PREFACTURA_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
-    
+
 
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_PREFACTURA_CCDD',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_PREFACTURA_CCDD.',v_contador_debug);
@@ -2834,12 +2834,12 @@ begin
 
     -- Se extrae la fecha inicial del siguiente mes al periodSeq del proceso
     v_fechaPeriodoSiguiente :=  f_Primer_Dia_Periodo_Siguiente(iperiodseq);
-    
+
     -- Se convierte a texto en formato DD/MM/YYYY para los registros de salida
     v_txtMes_Liquidacion := to_char(v_fechaPeriodoSiguiente, 'YYYYMM');
 
     w_debug('Insertando Registros de CREDITOS en tabla ENEL_PREFACT_DETALLE_CCDD.' ,  v_contador_debug);
-   
+
 	INSERT INTO ENELEXT.ENEL_PREFACT_DETALLE_CCDD ( PERIODO, PERIODSEQ, MES_LIQUIDACION, CREDITSEQ, CREDITTYPEID, PAYEESEQ, POSITIONSEQ, PDS, NOMBRE_FISCAL, CIF, IDPROVEEDOR, 
 											DESCRIPCION, FICHERO, ACTIVIDAD, DETALLE_ACTIVIDAD, CODIGOE4E,DELEGACION, ZONA, TERRITORIO, CALLE, COD_POSTAL, PROVINCIA, POBLACION, 
 											CANTIDAD, VALUE, SOLICITUD_SERVICIO, CONCEPTO_LIQ, DESC_CONCEPTO_LIQ, COD_CONTRATO, EVENTYPEID, CONTRATO, PRODUCTID, COD_POSTAL_DETALLE, 
@@ -2932,7 +2932,7 @@ begin
     w_debug('Fin Carga CREDITOS de la tabla ENEL_PREFACT_DETALLE_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
 
     w_debug('Insertando Registros de INCENTIVOS en tabla ENEL_PREFACT_DETALLE_CCDD.' ,  v_contador_debug);
-   
+
 	INSERT INTO ENELEXT.ENEL_PREFACT_DETALLE_CCDD ( PERIODO, PERIODSEQ, MES_LIQUIDACION, CREDITSEQ, CREDITTYPEID, PAYEESEQ, POSITIONSEQ, PDS, NOMBRE_FISCAL, CIF, IDPROVEEDOR, 
 											DESCRIPCION, FICHERO, ACTIVIDAD, DETALLE_ACTIVIDAD, CODIGOE4E, DELEGACION, ZONA, TERRITORIO, CALLE, COD_POSTAL, PROVINCIA, POBLACION, 
 											CANTIDAD, VALUE, SOLICITUD_SERVICIO, CONCEPTO_LIQ, DESC_CONCEPTO_LIQ, COD_CONTRATO, EVENTYPEID, CONTRATO, PRODUCTID, COD_POSTAL_DETALLE,
@@ -3030,7 +3030,7 @@ begin
     w_debug('Fin Borrado de la tabla ENEL_PREFACT_PORTADA_CCDD.', v_contador_debug);
     v_fechaActual := sysdate;    
     w_debug('Insertando Registros de CREDITOS en tabla ENEL_FACTPDS_PORTADA.' ,  v_contador_debug);
-   
+
 	INSERT INTO ENELEXT.ENEL_PREFACT_PORTADA_CCDD ( PERIODO, PERIODSEQ, NUMERO_RESUMEN, MES_LIQUIDACION, FECHA_LIQUIDACION, PAYEESEQ, POSITIONSEQ, CIF, CODIGOE4E,  
                                                 ZONA, PDS, NOMBRE_FISCAL, CALLE, COD_POSTAL, POBLACION, PROVINCIA, IDPROVEEDOR, FICHERO, DESCRIPCION, 
                                                 CONCEPTO_LIQ, DESC_CONCEPTO_LIQ, COD_CONTRATO, ACTIVIDAD, DETALLE_ACTIVIDAD, PRECIO_UNITARIO, CANTIDAD, IMPORTE_TOTAL )  
@@ -3094,12 +3094,12 @@ begin
 
 	ORDER BY PDS
 	;   
-      
+
 	filas := sql%rowcount;
     COMMIT;
 
     w_debug('Fin Carga de la tabla ENEL_PREFACT_PORTADA_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
-    
+
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_PREFACT_PORTADA_CCDD',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_PREFACT_PORTADA_CCDD.',v_contador_debug);
 
@@ -3129,7 +3129,7 @@ begin
 	v_ini_trimestral :=  f_fecha_inicio_trimestral(iperiodseq);
 	v_fin := f_Ultimo_Dia_Periodo(iperiodseq);
 	v_ini_bimensual :=  f_fecha_inicio_bimensual(iperiodseq);
-	
+
     w_debug('Inicio Borrado de la tabla ENEL_CUADRELIQ_CCDD.', v_contador_debug);
     BEGIN
         LOOP
@@ -3137,62 +3137,62 @@ begin
             EXIT WHEN SQL%ROWCOUNT = 0;
             COMMIT;
         END LOOP;
-        
+
         LOOP
             DELETE FROM ENELEXT.ENEL_LIQSCAWEB_FINAL_LEADS_WBE_CCDD WHERE PERIODO_liquidacion = iperiod AND ROWNUM <= 10000;
             EXIT WHEN SQL%ROWCOUNT = 0;
             COMMIT;
         END LOOP;
-        
+
         LOOP
             DELETE FROM ENELEXT.ENEL_CUADRELIQ_CCDD_SLA WHERE PERIODO = iperiod AND ROWNUM <= 10000;
             EXIT WHEN SQL%ROWCOUNT = 0;
             COMMIT;
         END LOOP;
-        
+
         LOOP
             DELETE FROM ENELEXT.ENEL_CUADRELIQ_CCDD_RAPPEL WHERE PERIODO = iperiod AND ROWNUM <= 10000;
             EXIT WHEN SQL%ROWCOUNT = 0;
             COMMIT;
         END LOOP;
-        
+
         LOOP
             DELETE FROM ENELEXT.ENEL_LIQSCAWEB_FINAL_WBE WHERE PERIODO = iperiod and PROCESSINGUNITSEQ = iprocessingunitseq AND ROWNUM <= 10000;
             EXIT WHEN SQL%ROWCOUNT = 0;
             COMMIT;
         END LOOP;
-		
+
 		LOOP
             DELETE FROM ENELEXT.ENEL_REGULARIZACION_CCDD WHERE PERIODO = iperiod AND ROWNUM <= 10000;
             EXIT WHEN SQL%ROWCOUNT = 0;
             COMMIT;
         END LOOP;
-		
+
 		LOOP
             DELETE FROM ENELEXT.ENEL_CCC_CCDD WHERE PERIODO = iperiod and ROWNUM <= 10000;
             EXIT WHEN SQL%ROWCOUNT = 0;
             COMMIT;
         END LOOP;
-		
+
 		LOOP
             DELETE FROM ENELEXT.ENEL_RENOVACION_CCDD WHERE PERIODO = iperiod AND ROWNUM <= 10000;
             EXIT WHEN SQL%ROWCOUNT = 0;
             COMMIT;
         END LOOP;
-		
+
 		LOOP
             DELETE FROM ENELEXT.ENEL_TDM_CCDD WHERE PERIODO = iperiod AND ROWNUM <= 10000;
             EXIT WHEN SQL%ROWCOUNT = 0;
             COMMIT;
         END LOOP;
-        
+
         /*BOM APM 03.06.2025*/
         LOOP
             DELETE FROM ENELEXT.ENEL_CUADRELIQ_CCDD_RESELLERS WHERE PERIODO = iperiod AND ROWNUM <= 10000;
             EXIT WHEN SQL%ROWCOUNT = 0;
             COMMIT;
         END LOOP;
-        
+
         LOOP
             DELETE FROM ENELEXT.ENEL_TDM2_CCDD WHERE PERIODO_BIMENSUAL = iperiod AND ROWNUM <= 10000;
             EXIT WHEN SQL%ROWCOUNT = 0;
@@ -3200,15 +3200,15 @@ begin
         END LOOP;
         /*EOM APM 03.06.2025*/
     END;
-    
+
     v_txtFechaLiquidacion := '';
     IF (iInterfaz = 'ACTUALIZA_INFORMES_POST_CCDD') THEN
 		v_txtFechaLiquidacion := to_char(SYSDATE, 'DD/MM/YYYY');
     END IF;
-    
+
 	w_debug('Fin Borrado de la tabla ENEL_CUADRELIQ_CCDD.', v_contador_debug);
     w_debug('Insertando Registros de datos en tabla ENEL_CUADRELIQ_CCDD.' ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_CUADRELIQ_CCDD (PERIODO, ORDERID, LINENUMBER, SUBLINENUMBER, EVENTTYPEID, IMPORTE, UNIDAD, CUPS, TIPO_VENTA, TIPO_CONTRATACION, ID_PRODUCTO, DESCRIPCION, LINEA_NEGOCIO, 
                                             NUM_PROVEEDOR, COD_PLATAF, FECHA_FIRMA, PEDIDO_CRM, WBE, NIF_PLATAF, NIF_CLIENTE, RAZON_SOCIAL, AGENTE_COMERCIAL, CANAL,
                                             VALOR_1, UNIDAD_1, PRODUCTO_SCAWEB, CODIGO_PDS_OCAP, CICLO_FACTURACION, ESTADO, IDPROVEEDOR, NUMPROVEEDOR, INCIDENCIA, 
@@ -3268,7 +3268,7 @@ begin
         ETT.TAD_STATE AS PROVINCIA,
         TMP_PDS.APLICACION_INCEN_CP AS APLICACION_INCEN_CP
         /*EOM APM 07.03.2024*/        
-		
+
 	FROM ENEL_TXN_TEMP_CCDD ETT
 		LEFT JOIN ENEL_CREDIT_TEMP_CCDD ECT
 			ON ECT.SALESTRANSACTIONSEQ = ETT.SALESTRANSACTIONSEQ
@@ -3276,16 +3276,16 @@ begin
 		LEFT JOIN ENEL_PROVEEDORES_TEMP_CCDD TEMP_PROV
 			ON TEMP_PROV.IDPROVEEDOR=ECT.GENERICATTRIBUTE2
             AND TEMP_PROV.PERIODSEQ=ECT.PERIODSEQ
-            
+
         INNER JOIN ENEL_PDS_TEMP_CCDD TMP_PDS     -- Se hace JOIN CON PDS para informar
 			ON ECT.POSITIONSEQ=TMP_PDS.RULEELEMENTOWNERSEQ
             AND ECT.PERIODSEQ=TMP_PDS.PERIODSEQ
-            
+
         INNER JOIN cs_transactionassignment txna    --Se hace el JOIN para sacar el Campo Agente (GA1) de la transacción de la pestaña de Participantes asociados a la transacción (callidus) 14.03.2022 MIKE - Petición Carmen
             ON ett.salestransactionseq = txna.salestransactionseq
             AND ett.tenantid = txna.tenantid
             AND txna.setnumber = 1    
-            
+
         INNER JOIN CS_SALESTRANSACTION SATXN
             ON ETT.SALESTRANSACTIONSEQ = SATXN.SALESTRANSACTIONSEQ
             AND ETT.TENANTID = SATXN.TENANTID
@@ -3294,7 +3294,7 @@ begin
             ON ETT.SALESTRANSACTIONSEQ = GATXN.SALESTRANSACTIONSEQ
             AND ETT.TENANTID = GATXN.TENANTID
 */
-		
+
 	WHERE ETT.PROCESSINGUNITSEQ=iprocessingUnitSeq
     AND ETT.PERIODSEQ=IPERIODSEQ --Diego 28/10/2022 salen datos en el informe que no deberian
 	;
@@ -3306,12 +3306,12 @@ begin
 
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_CUADRELIQ_CCDD',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_CUADRELIQ_CCDD.',v_contador_debug);
-    
-    
+
+
     INSERT INTO ENELEXT.ENEL_LEADS_CCDD (PERIODO , ORDERID , LINENUMBER , SUBLINENUMBER , EVENTTYPEID , ESTADOCONTRATO ,
                                                 IMPORTE , UNIDAD , PRODUCTO_SCAWEB , CODIGO_PDS_OCAP , 
                                                  ESTADO , IDPROVEEDOR ,NUMPROVEEDOR , nom_credito ,WO_VISITA,Venta_Relacionada )
-                                                 
+
     SELECT 
         ETT.PERIODO,
         ETT.ORDERID,
@@ -3338,12 +3338,12 @@ begin
 
 		LEFT JOIN ENEL_PROVEEDORES_TEMP_CCDD TEMP_PROV
 			ON TEMP_PROV.IDPROVEEDOR=ECT.GENERICATTRIBUTE2
-			
+
 		LEFT JOIN ENEL_PDS_TEMP_CCDD TMP_PDS
             on ECT.payeeseq=TMP_PDS.payeeseq 
             and ECT.POSITIONSEQ=TMP_PDS.RULEELEMENTOWNERSEQ
             and ECT.periodseq=TMP_PDS.periodseq
-            
+
         where ETT.EVENTYPEID like '%Lead%'
 
 
@@ -3351,11 +3351,11 @@ begin
 
 	filas := sql%rowcount;
     COMMIT;
-    
-    
+
+
     -- Carga pestaña Rappeles / Detalle --
     w_debug('Insertando Registros de datos en tabla ENEL_CUADRELIQ_CCDD_RAPPEL.' ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_CUADRELIQ_CCDD_RAPPEL (PERIODO, OI_SOLICITUD, LINE, SUBLINE, TIPO_EVENTO, NOMBRE, IMPORTE_COMISION,
                                                     PORC_APLICAR, IMPORTE, UNIDADES, CUPS, TIPO_VENTA, TIPO_RAPPEL, PRODUCTO,
                                                     PROVEEDOR, NUM_PROVEEDOR, ESTADO_CALIDAD, INCIDENCIA, COD_PLATAF, NIF_PLATAF,
@@ -3411,11 +3411,11 @@ begin
                                      AND cred.tenantid = commi.tenantid
                                      AND cred.periodseq = commi.periodseq
         INNER JOIN enel_txn_temp_ccdd ett ON ett.salestransactionseq = cred.salestransactionseq
-        
+
         inner join cs_period per on per.periodseq=iperiodseq
          AND PER.PERIODSEQ=INC.PERIODSEQ
             AND PER.REMOVEDATE=v_eot
-        
+
         inner join cs_participant par on par.payeeseq=inc.payeeseq
             AND par.TENANTID = itenantId
 			AND par.REMOVEDATE = v_eot
@@ -3424,7 +3424,7 @@ begin
         --INNER JOIN enel_proveedores_temp_ccdd temp_prov ON temp_prov.idproveedor = cred.genericattribute2 --Se pide(Carmen) que el proveedor salga del crédito GA16 14.03.2022 - MIKE
 		/*INNER JOIN cs_transactionassignment txna ON txna.salesorderseq = cred.salesorderseq
                                                 AND txna.salestransactionseq = cred.salestransactionseq*/
-                                                
+
 	WHERE ETT.PROCESSINGUNITSEQ = iprocessingUnitSeq
         AND ( inc.name LIKE ( 'C - Captacion CCDD%' ) OR  inc.name LIKE ( 'I - Captacion CCDD%Rap%' )) --Se añade el filtro de Rappel para el informe Cuadre Liquidación
         AND inc.tenantid = 'ENEL'
@@ -3432,7 +3432,7 @@ begin
         AND inc.periodseq=iperiodseq /*Diego Montañez 27/10/22 No filtraba por periodo y se añade esta linea */
         and inc.name NOT LIKE '%Dashboard%';/*Diego Montañez 11/11/22 Carga demasiados datos en tabla */
         --AND txna.genericattribute1 IS NOT NULL;
-    
+
     filas := sql%rowcount;
     COMMIT;
 
@@ -3440,10 +3440,10 @@ begin
 
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_CUADRELIQ_CCDD_RAPPEL',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_CUADRELIQ_CCDD_RAPPEL.',v_contador_debug);
-    
+
     -- Carga pestaña SLAs --
     w_debug('Insertando Registros de datos en tabla ENEL_CUADRELIQ_CCDD_SLA.' ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_CUADRELIQ_CCDD_SLA (PERIODO, NOMBRE, TIPO_VENTA, TIPO_SLA, IMPORTE_COMISION, CONSECUCION, PORC_APLICAR,
                                                 IMPORTE, COD_PLATAF) 
 	SELECT 
@@ -3465,8 +3465,8 @@ begin
         inc.value  AS importe,
         pos.name AS cod_plataf
         /*EOM APM 18.07.2023*/
-        
-        
+
+
     /*FROM
     cs_commission commi
     INNER JOIN cs_incentive inc ON commi.incentiveseq = inc.incentiveseq
@@ -3479,7 +3479,7 @@ begin
                                  AND cred.periodseq = commi.periodseq
     INNER JOIN enel_txn_temp_ccdd ett ON ett.salestransactionseq = cred.salestransactionseq
     LEFT JOIN enel_proveedores_temp_ccdd temp_prov ON temp_prov.idproveedor = cred.genericattribute2
-		
+
 	WHERE ETT.PROCESSINGUNITSEQ=iprocessingUnitSeq
     AND( inc.name = 'I - Captacion CCDD%Calidad de la Venta%'
         OR inc.name = 'I - Captacion CCDD%TM3%'
@@ -3509,7 +3509,7 @@ WHERE
     AND inc.name LIKE ( 'I - Captacion CCDD%' )
     AND inc.GENERICATTRIBUTE1 LIKE '%SLA%'
     AND inc.periodseq=iperiodseq; /*Diego Montañez 27/10/22 No filtraba por periodo y se añade esta linea */
-    
+
     filas := sql%rowcount;
     COMMIT;
 
@@ -3517,10 +3517,10 @@ WHERE
 
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_CUADRELIQ_CCDD_SLA',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_CUADRELIQ_CCDD_SLA.',v_contador_debug);
-	
+
     -- Carga pestaña Renovación --
 	w_debug('Insertando Registros de datos en tabla ENEL_RENOVACION_CCDD.' ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_RENOVACION_CCDD (PERIODO, PERIODSEQ, ORDERID, LINENUMBER, SUBLINENUMBER, EVENTTYPEID, IMPORTE, UNIDAD, VALOR_1, UNIDAD_1, PRODUCTO_SCAWEB, CODIGO_PDS_OCAP, 
 												CICLO_FACTURACION, ESTADO, IDPROVEEDOR, NUMPROVEEDOR, INCIDENCIA, CREDITTYPEID, ESTADO_CTRLCALIDAD, Nom_Credito, PRODUCTO,
 												CUPS, FECHA_FIRMA, PEDIDO_CRM, PAYEESEQ, POSITIONSEQ, FECHA_ALTA )
@@ -3557,24 +3557,24 @@ WHERE
 		CRED.PAYEESEQ, 
 		CRED.POSITIONSEQ,
 		TXN.GENERICDATE4 FECHA_ALTA
-		
+
     FROM CS_COMMISSION COMMI
 		INNER JOIN CS_INCENTIVE INC
 			on commi.incentiveseq = inc.incentiveseq
 			and commi.payeeseq = inc.payeeseq
 			and commi.tenantId = inc.tenantId
-		
+
 		INNER JOIN cs_credit CRED
 			on commi.creditseq = cred.creditseq
 			and cred.payeeseq = commi.payeeseq
 			and cred.processingUnitseq = commi.processingUnitSeq
 			and cred.tenantId = commi.tenantId
 			and cred.periodSeq = commi.periodSeq
-		
+
 		LEFT JOIN ENEL_PROVEEDORES_TEMP_CCDD TEMP_PROV
 			ON TEMP_PROV.IDPROVEEDOR=CRED.GENERICATTRIBUTE2
 			and TEMP_PROV.tenantId = CRED.tenantId
-			
+
 
 		INNER JOIN CS_SALESTRANSACTION txn
 			ON CRED.SALESTRANSACTIONSEQ = txn.SALESTRANSACTIONSEQ
@@ -3582,13 +3582,13 @@ WHERE
 			AND txn.compensationdate BETWEEN v_ini_anual AND v_fin
             AND txn.tenantid = cred.tenantId
             AND txn.modelseq = 0
-			
+
 		INNER JOIN cs_salesorder ordtxn
 			ON txn.salesorderseq = ordtxn.salesorderseq
 			AND ordtxn.removedate  = v_eot
 			AND ordtxn.processingunitseq = txn.processingunitseq
 			AND ordtxn.tenantid = txn.tenantid
-	
+
 		INNER JOIN cs_eventtype etype
 			ON txn.eventtypeseq = etype.datatypeseq
 			AND etype.removedate  = v_eot
@@ -3598,17 +3598,17 @@ WHERE
 	and inc.tenantId = itenantId
 	and commi.processingUnitSeq = iprocessingUnitSeq
     ;
-               
+
     filas := sql%rowcount;
     COMMIT;
-  
+
     w_debug('Fin Carga de la tabla ENEL_RENOVACION_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
 
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_RENOVACION_CCDD',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
-	
+
 	-- Carga pestaña Regularización --
 	w_debug('Insertando Registros de datos en tabla ENEL_REGULARIZACION_CCDD.' ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_REGULARIZACION_CCDD (PERIODO, PERIODSEQ, ORDERID, LINENUMBER, SUBLINENUMBER, EVENTTYPEID, IMPORTE, UNIDAD, VALOR_1, UNIDAD_1, PRODUCTO_SCAWEB, CODIGO_PDS_OCAP, 
 												CICLO_FACTURACION, ESTADO, IDPROVEEDOR, NUMPROVEEDOR, INCIDENCIA, CREDITTYPEID, ESTADO_CTRLCALIDAD, Nom_Credito, PRODUCTO,
 												CUPS, FECHA_FIRMA, PEDIDO_CRM, PAYEESEQ, POSITIONSEQ, PERIODO_LIQ)
@@ -3645,20 +3645,20 @@ WHERE
 		CRED.PAYEESEQ, 
 		CRED.POSITIONSEQ,
 		CRED.COMPENSATIONDATE
-		
+
     FROM CS_COMMISSION COMMI
 		INNER JOIN CS_INCENTIVE INC
 			on commi.incentiveseq = inc.incentiveseq
 			and commi.payeeseq = inc.payeeseq
 			and commi.tenantId = inc.tenantId
-			
+
 		INNER JOIN cs_credit CRED
 			on commi.creditseq = cred.creditseq
 			and cred.payeeseq = commi.payeeseq
 			and cred.processingUnitseq = commi.processingUnitSeq
 			and cred.tenantId = commi.tenantId
 			and cred.periodSeq = commi.periodSeq
-			
+
 		LEFT JOIN ENEL_PROVEEDORES_TEMP_CCDD TEMP_PROV
 			ON TEMP_PROV.IDPROVEEDOR=CRED.GENERICATTRIBUTE2
 			and TEMP_PROV.tenantId = CRED.tenantId
@@ -3669,13 +3669,13 @@ WHERE
 			AND txn.compensationdate BETWEEN v_ini_trimestral AND v_fin
             AND txn.tenantid = cred.tenantId
             AND txn.modelseq = 0
-			
+
 		INNER JOIN cs_salesorder ordtxn
 			ON txn.salesorderseq = ordtxn.salesorderseq
 			AND ordtxn.removedate  = v_eot
 			AND ordtxn.processingunitseq = txn.processingunitseq
 			AND ordtxn.tenantid = txn.tenantid
-	
+
 		INNER JOIN cs_eventtype etype
 			ON txn.eventtypeseq = etype.datatypeseq
 			AND etype.removedate  = v_eot
@@ -3685,17 +3685,17 @@ WHERE
 	and inc.tenantId = itenantId
 	and commi.processingUnitSeq = iprocessingUnitSeq
     ;
-               
+
     filas := sql%rowcount;
     COMMIT;
-  
+
     w_debug('Fin Carga de la tabla ENEL_REGULARIZACION_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
 
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_REGULARIZACION_CCDD',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
-	
+
 	-- Carga pestaña CCC --
 	w_debug('Insertando Registros de datos en tabla ENEL_CCC_CCDD.' ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_CCC_CCDD (PERIODO, ORDERID, LINENUMBER, SUBLINENUMBER, EVENTTYPEID, IMPORTE, UNIDAD, VALOR_1, UNIDAD_1, PRODUCTO_SCAWEB, CODIGO_PDS_OCAP, 
 										CICLO_FACTURACION, ESTADO, IDPROVEEDOR, NUMPROVEEDOR, INCIDENCIA, CREDITTYPEID, ESTADO_CTRLCALIDAD, Nom_Credito, PRODUCTO,
 										CUPS, FECHA_FIRMA, PEDIDO_CRM)
@@ -3728,7 +3728,7 @@ WHERE
 		ETT.ALTERNATEORDERNUMBER, --CUPS
 		ETT.GENERICDATE3, --fecha de firma
 		ETT.GENERICATTRIBUTE24 -- pedido_CRM
-		
+
     FROM ENEL_TXN_TEMP_CCDD ETT
 		INNER JOIN ENEL_CREDIT_TEMP_CCDD ECT
 			ON ECT.SALESTRANSACTIONSEQ = ETT.SALESTRANSACTIONSEQ
@@ -3739,7 +3739,7 @@ WHERE
 		INNER JOIN CS_COMMISSION COMMI
 			ON COMMI.CREDITSEQ = ECT.CREDITSEQ
             AND COMMI.PAYEESEQ = ECT.PAYEESEQ
-        
+
 		INNER JOIN CS_INCENTIVE INC
 			ON INC.INCENTIVESEQ = COMMI.INCENTIVESEQ
 
@@ -3751,14 +3751,14 @@ WHERE
 
     filas := sql%rowcount;
     COMMIT;
-  
+
     w_debug('Fin Carga de la tabla ENEL_CCC_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
 
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_CCC_CCDD',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
-	
+
 	-- Carga pestaña Detalle TdM --
 	w_debug('Insertando Registros de datos en tabla ENEL_TDM_CCDD.' ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_TDM_CCDD (PERIODO, PERIODSEQ, ORDERID, LINENUMBER, SUBLINENUMBER, EVENTTYPEID, IMPORTE, UNIDAD, VALOR_1, UNIDAD_1, PRODUCTO_SCAWEB, CODIGO_PDS_OCAP, 
 										CICLO_FACTURACION, ESTADO, IDPROVEEDOR, NUMPROVEEDOR, INCIDENCIA, CREDITTYPEID, ESTADO_CTRLCALIDAD, Nom_Credito, PRODUCTO,
 										CUPS, FECHA_FIRMA, PEDIDO_CRM, PAYEESEQ, POSITIONSEQ, PERIODO_LIQ, ALTAS, BAJAS, PORC_TDM, IMPORTE_COMISION )
@@ -3799,7 +3799,7 @@ WHERE
 		INC.GENERICNUMBER2 as BAJAS,
 		INC.GENERICNUMBER3 as PORC_TDM, 
 		INC.GENERICNUMBER5 as IMPORTE_COMISION 
-		
+
     FROM CS_COMMISSION COMMI
 		INNER JOIN ENEL_INCEN_TEMP_CCDD INC
 			on commi.incentiveseq = inc.incentiveseq
@@ -3807,14 +3807,14 @@ WHERE
 			and commi.tenantId = inc.tenantId
             and inc.periodseq=iperiodseq
 
-			
+
 		INNER JOIN cs_credit ECT
 			on commi.creditseq = ECT.creditseq
 			and ECT.payeeseq = commi.payeeseq
 			and ECT.processingUnitseq = commi.processingUnitSeq
 			and ECT.tenantId = commi.tenantId
 			and ECT.periodSeq = commi.periodSeq
-			
+
 		LEFT JOIN ENEL_PROVEEDORES_TEMP_CCDD TEMP_PROV
 			ON TEMP_PROV.IDPROVEEDOR=ECT.GENERICATTRIBUTE2
 			and TEMP_PROV.tenantId = ECT.tenantId
@@ -3826,13 +3826,13 @@ WHERE
 			AND txn.compensationdate =ect.compensationdate
             AND txn.tenantid = ECT.tenantId
             AND txn.modelseq = 0
-			
+
 		INNER JOIN cs_salesorder ordtxn
 			ON txn.salesorderseq = ordtxn.salesorderseq
 			AND ordtxn.removedate  = v_eot
 			AND ordtxn.processingunitseq = txn.processingunitseq
 			AND ordtxn.tenantid = txn.tenantid
-	
+
 		INNER JOIN cs_eventtype etype
 			ON txn.eventtypeseq = etype.datatypeseq
 			AND etype.removedate  = v_eot
@@ -3845,13 +3845,13 @@ WHERE
 
     filas := sql%rowcount;
     COMMIT;
-  
+
     w_debug('Fin Carga de la tabla ENEL_TDM_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
 
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_TDM_CCDD',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
-    
+
     w_debug('Insertando Registros de datos en tabla ENEL_TDM2_CCDD.' ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_TDM2_CCDD (PERIODO, PERIODSEQ, ORDERID, LINENUMBER, SUBLINENUMBER, EVENTTYPEID, IMPORTE, UNIDAD, VALOR_1, UNIDAD_1, PRODUCTO_SCAWEB, CODIGO_PDS_OCAP, 
 										CICLO_FACTURACION, ESTADO, IDPROVEEDOR, NUMPROVEEDOR, INCIDENCIA, CREDITTYPEID, ESTADO_CTRLCALIDAD, Nom_Credito, PRODUCTO,
 										CUPS, FECHA_FIRMA, PEDIDO_CRM, PAYEESEQ, POSITIONSEQ, PERIODO_LIQ, ALTAS, BAJAS, PORC_TDM, IMPORTE_COMISION, 
@@ -3923,25 +3923,25 @@ WHERE
             AND txn.compensationdate BETWEEN per.startdate AND per.enddate          
             AND txn.tenantid = ECT.tenantId
             AND txn.modelseq = 0	
-          
+
         LEFT JOIN CS_GASALESTRANSACTION etxn0   
 			ON txn.SALESTRANSACTIONSEQ = etxn0.SALESTRANSACTIONSEQ
 			AND etxn0.tenantid = txn.tenantid
 			AND txn.processingunitseq = etxn0.processingunitseq
 			AND etxn0.pagenumber = 0
 			AND etxn0.compensationdate = txn.compensationdate 
-            
+
         LEFT JOIN CS_COMMISSION COMMI
             ON COMMI.CREDITSEQ = ECT.CREDITSEQ
             AND COMMI.PAYEESEQ = ECT.PAYEESEQ
             AND COMMI.PERIODSEQ= ECT.PERIODSEQ
-         
+
 		INNER JOIN cs_salesorder ordtxn
 			ON txn.salesorderseq = ordtxn.salesorderseq
 			AND ordtxn.removedate  = '01/01/2200'
 			AND ordtxn.processingunitseq = txn.processingunitseq
 			AND ordtxn.tenantid = txn.tenantid
-         
+
         INNER JOIN cs_position pos
             ON pos.payeeseq = ect.payeeseq
             AND pos.removedate  = '01/01/2200'
@@ -3949,12 +3949,12 @@ WHERE
             and POS.PROCESSINGUNITSEQ =  ECT.processingUnitSeq
             AND pos.EFFECTIVESTARTDATE <= per.startdate              
 			AND pos.EFFECTIVEENDDATE >= per.enddate
-            
+
 		INNER JOIN cs_eventtype etype
 			ON txn.eventtypeseq = etype.datatypeseq
 			AND etype.removedate  = '01/01/2200'
 			AND txn.tenantid = etype.tenantid
-        
+
          /* BOM APM 31.07.2025 */
         LEFT JOIN CS_INCENTIVE INCE 
 			ON INCE.INCENTIVESEQ = COMMI.INCENTIVESEQ 
@@ -3974,12 +3974,12 @@ WHERE
 
     filas := sql%rowcount;
     COMMIT;
-  
+
     w_debug('Fin Carga de la tabla ENEL_TDM2_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
-	
+
 	-- Carga fichero de WBE --
 	w_debug('Insertando Registros de datos en tabla ENEL_LIQSCAWEB_FINAL_WBE.' ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_LIQSCAWEB_FINAL_WBE (PERIODO, ORDERID, subcanal, wbe, EVENTTYPEID, IMPORTE, UNIDAD, VALOR_1, UNIDAD_1, PRODUCTO_SCAWEB, CODIGO_PDS_OCAP, 
 												CICLO_FACTURACION, ESTADO, IDPROVEEDOR, NUMPROVEEDOR, INCIDENCIA, CREDITTYPEID, nom_credito,PRODUCTO,PROCESSINGUNITSEQ,
 												ESTADOCONTRATO) 
@@ -4009,23 +4009,23 @@ WHERE
         ETT.PRODUCTID,
 		iprocessingunitseq,
 		ETT.GENERICATTRIBUTE3
-                
+
     FROM ENEL_TXN_TEMP_CCDD ETT
         LEFT JOIN ENEL_CREDIT_TEMP_CCDD ECT
             ON ECT.SALESTRANSACTIONSEQ = ETT.SALESTRANSACTIONSEQ
-    
+
         LEFT JOIN ENEL_PROVEEDORES_TEMP_CCDD TEMP_PROV
             ON TEMP_PROV.IDPROVEEDOR=ECT.GENERICATTRIBUTE2
-    
+
         LEFT JOIN ENEL_PDS_TEMP_CCDD TMP_PDS
             on ECT.payeeseq=TMP_PDS.payeeseq 
             and ECT.POSITIONSEQ=TMP_PDS.RULEELEMENTOWNERSEQ
             and ECT.periodseq=TMP_PDS.periodseq
-    
+
     WHERE ETT.PROCESSINGUNITSEQ=iprocessingunitseq
 		and ECT.GENERICATTRIBUTE11 is not null
     ;
-    
+
     filas := sql%rowcount;
     COMMIT;
 
@@ -4041,16 +4041,16 @@ WHERE
     dep.value AS Importe,
     DEP.EARNINGCODEID AS Proveedor,
     POS.NAME AS COdigo_Comercial
-    
+
     from enel_deposit_temp_CCDD dep
         inner join cs_position pos
             on pos.payeeseq = dep.payeeseq
             and pos.removedate = '01/01/2200'
             and pos.processingunitseq = iprocessingunitseq
-    
+
     where dep.name like '%Leads%'
     AND dep.PERIODSEQ = iperiodseq
-    
+
     ;
     filas := sql%rowcount;
     COMMIT;
@@ -4058,12 +4058,12 @@ WHERE
 
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_LIQSCAWEB_FINAL_WBE',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_LIQSCAWEB_FINAL_WBE.',v_contador_debug);
-    
+
 
 /*BOM APM 03.06.2025*/
 
     w_debug('Insertando Registros de datos en tabla ENEL_CUADRELIQ_CCDD_RESELLERS.' ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_CUADRELIQ_CCDD_RESELLERS (PERIODO, ORDERID, LINENUMBER, SUBLINENUMBER, EVENTTYPEID, ESTADOCONTRATO, IMPORTE, UNIDAD, 
                                             VALOR_1, UNIDAD_1, PRODUCTO_SCAWEB, CODIGO_PDS_OCAP, CICLO_FACTURACION, ESTADO, IDPROVEEDOR, 
                                             NUMPROVEEDOR, INCIDENCIA, CREDITTYPEID, nom_credito,PRODUCTO, RESPONSABLE, NUM_DIAS, RETROCESION,
@@ -4118,20 +4118,20 @@ WHERE
         ETT.GENERICATTRIBUTE20, --APM 17.07.2025
         ETT.GENERICATTRIBUTE9 AS TIPOLOGIA, --APM 17.07.2025
         ECT.GENERICATTRIBUTE15 AS OBSERVACIONES --APM 17.07.2025
-        
+
 	FROM ENEL_TXN_TEMP_CCDD ETT
 		LEFT JOIN ENEL_CREDIT_TEMP_CCDD ECT
 			ON ECT.SALESTRANSACTIONSEQ = ETT.SALESTRANSACTIONSEQ
 
 		LEFT JOIN ENEL_PROVEEDORES_TEMP_CCDD TEMP_PROV
 			ON TEMP_PROV.IDPROVEEDOR=ECT.GENERICATTRIBUTE2
-			
+
 		LEFT JOIN ENEL_PDS_TEMP_CCDD TMP_PDS
             on ECT.payeeseq=TMP_PDS.payeeseq 
             and ECT.POSITIONSEQ=TMP_PDS.RULEELEMENTOWNERSEQ
             and ECT.periodseq=TMP_PDS.periodseq
 			and ( tmp_pds.title_name not like 'RETAIL TF RESP' )
-        
+
         LEFT JOIN CS_COMMISSION COMMI
             ON COMMI.CREDITSEQ = ECT.CREDITSEQ
             AND COMMI.PAYEESEQ = ECT.PAYEESEQ
@@ -4143,8 +4143,8 @@ WHERE
             AND ince.positionseq = commi.positionseq
             AND ince.periodseq = commi.periodseq
             AND ince.pipelinerunseq = commi.pipelinerunseq
-        
-		
+
+
 	WHERE ETT.PROCESSINGUNITSEQ=38280596832650118 --CCDD
 	;
 
@@ -4181,7 +4181,7 @@ begin
     w_debug('Fin Borrado de la tabla ENEL_COMP_SCAWEB_E4E_CCDD.', v_contador_debug);
 
     w_debug('Insertando Registros SCAWEB-E4E de datos en tabla ENEL_COMP_SCAWEB_E4E_CCDD.' ,  v_contador_debug);
-    
+
 	INSERT INTO ENELEXT.ENEL_COMP_SCAWEB_E4E_CCDD ( PERIODO, IDPROVEEDOR, DESCRIPCION, ACTIVIDAD, PDS, NOMBRE_FISCAL, IMPORTE_SCAWEB, E4E_POS_CON_CONTRATO, 
                                                 E4E_POS_SIN_CONTRATO, E4E_NEGATIVO,E4E_OPERACIONES )   
 	SELECT 
@@ -4203,7 +4203,7 @@ begin
 			where PERIODO = iperiod
             group by PERIODO, TRIM(to_char(PROVEEDOR,'000')) , SCA.CODIGO_AGENTE_INTERNO 
 		) T_SCAWEB
-      
+
 		LEFT JOIN 
 			(select 
 				TRIM(IDPROVEEDOR) as IDPROVEEDOR, PDS, 
@@ -4217,7 +4217,7 @@ begin
 			) T_E4E
            ON TRIM(T_SCAWEB.IDPROVEEDOR) = TRIM(T_E4E.IDPROVEEDOR) 
            AND TRIM(T_SCAWEB.PDS) = TRIM(T_E4E.PDS)
-          
+
 		LEFT JOIN 
 			(select 
 				TRIM(IDPROVEEDOR) as IDPROVEEDOR, PDS, 
@@ -4228,7 +4228,7 @@ begin
 			)E4ENT
 			ON TRIM(T_SCAWEB.PDS) = TRIM(E4ENT.PDS)
             AND TRIM(T_SCAWEB.IDPROVEEDOR) = TRIM(E4ENT.IDPROVEEDOR)
-                        
+
 		INNER JOIN ENEL_PDS_TEMP_CCDD TMP_PDS
 			ON T_SCAWEB.PDS=TMP_PDS.PDS
 			and (TMP_PDS.SUBCANAL='CCDD'
@@ -4237,14 +4237,14 @@ begin
 		INNER JOIN ENEL_PROVEEDORES_TEMP_CCDD TMP_PROV 
 			ON  TRIM(TMP_PROV.IDPROVEEDOR)=TRIM(T_SCAWEB.IDPROVEEDOR)
 	;      
-           
+
 	filas := sql%rowcount;
     COMMIT;
 
     w_debug('Fin Carga Registros SCAWEB-E4E de la tabla ENEL_COMP_SCAWEB_E4E_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
 
     w_debug('Insertando Registros E4E-SCAWEB (scaweb nulos) de datos en tabla ENEL_COMP_SCAWEB_E4E_CCDD.' ,  v_contador_debug);
-    
+
 	INSERT INTO ENELEXT.ENEL_COMP_SCAWEB_E4E_CCDD ( PERIODO, IDPROVEEDOR, DESCRIPCION, ACTIVIDAD, PDS, NOMBRE_FISCAL, IMPORTE_SCAWEB, E4E_POS_CON_CONTRATO,
                                                 E4E_POS_SIN_CONTRATO, E4E_NEGATIVO,E4E_OPERACIONES )
 	SELECT 
@@ -4270,7 +4270,7 @@ begin
 		where periodseq=iperiodseq
 		group by iperiod, TRIM(IDPROVEEDOR), PDS 
 		) T_E4E
-            
+
 		LEFT JOIN
 			( select PERIODO, trim( to_char(PROVEEDOR,'000')) IDPROVEEDOR, SCA.CODIGO_AGENTE_INTERNO as PDS, sum(REALVALUE) as IMPORTE_SCAWEB, count(*) registros
 				from ENEL_SCAWEB_LIQUIDACION_CCDD sca where PERIODO = iperiod
@@ -4278,7 +4278,7 @@ begin
 			) T_SCAWEB           
 			ON TRIM(T_SCAWEB.IDPROVEEDOR) = TRIM(T_E4E.IDPROVEEDOR) 
 			AND TRIM(T_SCAWEB.PDS) = TRIM(T_E4E.PDS)
-          
+
 		INNER JOIN ENEL_PDS_TEMP_CCDD TMP_PDS
 			ON T_E4E.PDS=TMP_PDS.PDS
 			AND (TMP_PDS.SUBCANAL='CCDD'
@@ -4286,15 +4286,15 @@ begin
 
 		INNER JOIN ENEL_PROVEEDORES_TEMP_CCDD TMP_PROV 
 			ON  TRIM(TMP_PROV.IDPROVEEDOR)=TRIM(T_E4E.IDPROVEEDOR)
-      
+
 	WHERE T_SCAWEB.IMPORTE_SCAWEB is null
 	;
-      
+
 	filas := sql%rowcount;
     COMMIT;
 
     w_debug('Fin Carga Registros E4E-SCAWEB (scaweb nulos) de la tabla ENEL_COMP_SCAWEB_E4E_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
-        
+
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_COMP_SCAWEB_E4E_CCDD',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_COMP_SCAWEB_E4E_CCDD.',v_contador_debug);
 
@@ -4336,7 +4336,7 @@ begin
         EPDS.ZONA,
         EPDS.TERRITORIO,
         sum(edt.VALUE) IMPORTEBASE
-            
+
 	FROM ENEL_PROVEEDORES_TEMP_CCDD ept
 		LEFT JOIN ENEL_DEPOSIT_TEMP_CCDD edt 
              ON EPT.IDPROVEEDOR = edt.EARNINGGROUPID
@@ -4380,7 +4380,7 @@ begin
         0 as IMPORTE_REACTIVA,
         sum(edt.VALUE) IMPORTE_S2S
         /*EOM APM 17.07.2025*/
-            
+
 	FROM enel_deposit_temp_ccdd edt
     INNER JOIN enel_proveedores_temp_ccdd ept ON edt.proveedor_ga6 = ept.idproveedor
     INNER JOIN enel_pds_temp_ccdd epds ON epds.ruleelementownerseq = edt.positionseq
@@ -4425,7 +4425,7 @@ begin
 	FROM ENELEXT.ENEL_PERIODOS_LIQ_CCDD epl 
 	WHERE epl.PERIODO = iperiod 
 		AND epl.PROCESSINGUNITSEQ=iprocessingUnitSeq;
- 
+
     IF v_checkCountEstado > 0 THEN
         v_liquidado := true;
         w_debug(' Comprobar Estado del Periodo : LIQUIDADO - '||  iperiod ||' Unidad Proceso: '|| to_char(iprocessingUnitSeq) ,  v_contador_debug);
@@ -4433,7 +4433,7 @@ begin
         v_liquidado := false;    
         w_debug(' Comprobar Estado del Periodo : NO Liquidado - '||  iperiod ||' Unidad Proceso: '|| to_char(iprocessingUnitSeq) ,  v_contador_debug);
     END IF;
-    
+
     return v_liquidado;      
 end;           
 
@@ -4451,7 +4451,7 @@ begin
             EXIT WHEN SQL%ROWCOUNT = 0;
             COMMIT;
         END LOOP;
-        
+
          LOOP
             DELETE FROM ENELEXT.ENEL_RAPPELES_LIQ_CCDD WHERE periodo = iperiod and ROWNUM <= 10000;
             EXIT WHEN SQL%ROWCOUNT = 0;
@@ -4464,7 +4464,7 @@ begin
             COMMIT;
         END LOOP;        
     END;
-    
+
     v_txtFechaLiquidacion := '';
     IF (iInterfaz = 'ACTUALIZA_INFORMES_POST_CCDD') THEN
 		v_txtFechaLiquidacion := to_char(SYSDATE, 'DD/MM/YYYY');
@@ -4472,7 +4472,7 @@ begin
     w_debug('Fin Borrado de la tabla ENEL_RAPPELES_CCDD.', v_contador_debug);
 
     w_debug('Insertando datos en tabla ENEL_RAPPELES_CCDD.' ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_RAPPELES_CCDD  (PERIODO, NAME, IMPORTE, CODIGO_PDS_OCAP, CICLO_FACTURACION, PROVEEDOR, IDPROVEEDOR, CONCEPTO, TRAMO, ALTAS, BAJAS,
 											PORC_TDM, IMPORTE_COMISION, PENA_TDM,COMISIONBASE )   
     SELECT 
@@ -4491,11 +4491,11 @@ begin
 		CSI.GENERICNUMBER5 as IMPORTE_COMISION,
         CSI.GENERICNUMBER4 as PENA_TDM, --APM 16.07.2025
         CSI.GENERICNUMBER5 AS COMISIONBASE
-    
+
     FROM ENEL_INCEN_TEMP_CCDD CSI --CS_INCENTIVE CSI
         INNER JOIN ENEL_PROVEEDORES_TEMP_CCDD EPT
             ON EPT.IDPROVEEDOR=CSI.GENERICATTRIBUTE2
-          
+
         INNER JOIN ENEL_PDS_TEMP_CCDD CSP --CS_PAYEE CSP
             ON CSI.PAYEESEQ=CSP.PAYEESEQ
 		/*
@@ -4503,7 +4503,7 @@ begin
             ON CSPE.PERIODSEQ=CSI.PERIODSEQ
             and cspe.removedate = v_eot
 		*/
-  
+
     WHERE 
 		CSI.periodseq = iperiodseq 
 		and ((CSI.NAME LIKE 'I - Captacion CCDD - Rappel Ventas%' and csi.GENERICATTRIBUTE16 is not null)
@@ -4511,16 +4511,16 @@ begin
             or csi.name like 'I - Captacion Resellers%') --APM 16.07.2025
         and csi.value<>0
 		; 
-    
+
     filas := sql%rowcount;
     commit;
-	
+
 	w_debug('Fin Carga de la tabla ENEL_RAPPELES_CCDD - incentivos: '|| to_char(filas) || ' filas.', v_contador_debug);
     w_debug('Fin Carga de la tabla ENEL_RAPPELES_CCDD: '|| to_char(filas) || ' filas.', v_contador_debug);
 
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_RAPPELES_CCDD',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_RAPPELES_CCDD.',v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_RAPPELES_WBE(PERIODO, NAME, IMPORTE, CODIGO_PDS_OCAP, CICLO_FACTURACION, PROVEEDOR, IDPROVEEDOR, CONCEPTO, TRAMO, subcanal, wbe, PROCESSINGUNITSEQ)
     SELECT 
         iperiod,
@@ -4535,19 +4535,19 @@ begin
         TMP_PDS.subcanal,
         CSI.GENERICATTRIBUTE7 wbe,
         iprocessingUnitSeq
-	
+
 	FROM ENEL_INCEN_TEMP_CCDD CSI --CS_INCENTIVE CSI
         INNER JOIN ENEL_PROVEEDORES_TEMP_CCDD EPT
             ON EPT.IDPROVEEDOR=CSI.GENERICATTRIBUTE2
-          
+
         INNER JOIN ENEL_PDS_TEMP_CCDD CSP --CS_PAYEE CSP
             ON CSI.PAYEESEQ=CSP.PAYEESEQ
-    
+
 		LEFT JOIN ENEL_PDS_TEMP_CCDD TMP_PDS
 			on CSI.payeeseq=TMP_PDS.payeeseq 
 			and CSI.POSITIONSEQ=TMP_PDS.RULEELEMENTOWNERSEQ
 			and CSI.periodseq=TMP_PDS.periodseq
-		
+
     WHERE 
 		CSI.periodseq = iperiodseq 
         /* QUE REGLAS DEBEN IR AQUI?
@@ -4558,17 +4558,17 @@ begin
         OR CSI.NAME LIKE 'I - Captacion CCDD - Incentivo Transversal % - %')
 		and csi.value<>0
     ;
-    
+
     filas := sql%rowcount;
     COMMIT;
-	
+
 	w_debug('Fin Carga de la tabla ENEL_RAPPELES_WBE - incentivos: '|| to_char(filas) || ' filas.', v_contador_debug);
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_RAPPELES_WBE',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_RAPPELES_WBE.',v_contador_debug);
-    
+
     -- Rappeles
     w_debug('Insertando Registros de datos en tabla ENEL_RAPPELES_LIQ_CCDD.' ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_RAPPELES_LIQ_CCDD (PERIODO, NOMBRE,IMP_BASE,PORCENTAJE,IMPORTE, TIPO_VENTA,
                                                 TIPO_RAPPEL,CONSECUCION,REALIZADO,OBJETIVO,TIPO_SLA,IMPORTE_BASE,COD_PLATAF)
 
@@ -4586,9 +4586,9 @@ begin
             INC.GENERICATTRIBUTE6 AS TIPO_SLA,
             INC.GENERICNUMBER5 AS IMPORTE_BASE,
             pos.name AS COD_PLATAF
-            	
+
 	FROM  CS_INCENTIVE INC       
-    
+
     left join CS_PERIOD PER
             ON PER.PERIODSEQ=IPERIODSEQ
             AND PER.PERIODSEQ=INC.PERIODSEQ
@@ -4602,8 +4602,8 @@ begin
 			AND pos.EFFECTIVEENDDATE >= PER.ENDDATE - 1
 			and POS.PROCESSINGUNITSEQ = 38280596832650118
             AND POS.RULEELEMENTOWNERSEQ=INC.POSITIONSEQ
-        
-		
+
+
 	WHERE INC.PROCESSINGUNITSEQ=38280596832650118
     AND (inc.name LIKE 'I - Captacion CCDD%Rap%'
     OR INC.NAME LIKE 'I - Captacion CCDD - Incentivo Transversal % - %')
@@ -4644,9 +4644,9 @@ begin
     w_debug('Fin Borrado de la tabla ENEL_E4E_CCDD_WBE.', v_contador_debug);
 
     w_debug('Insertando Registros E4E de datos en tabla ENEL_E4E_CCDD_WBE.' ,  v_contador_debug);
-    
+
 	INSERT INTO ENELEXT.ENEL_E4E_CCDD_WBE ( PERIODSEQ, PERIODO, IDPROVEEDOR, DESCRIPCION, PDS, NOMBRE_FISCAL, EARNINGGROUPID, IMPORTE_SCAWEB)  
-     
+
         select depo.PERIODSEQ, 
             PER.name, 
             TRIM(TMP_PROV.IDPROVEEDOR) AS IDPROVEEDOR, 
@@ -4655,29 +4655,29 @@ begin
             TMP_PDS.NOMBRE_FISCAL AS NOMBRE_FISCAL,
             EARNINGGROUPID, 
             depo.VALUE
-        
+
         from cs_deposit depo
                 INNER JOIN CS_PERIOD PER
                     ON PER.PERIODSEQ=DEPO.PERIODSEQ
                     AND PER.REMOVEDATE='01/01/2200'
-                    
+
 		INNER JOIN ENELEXT.ENEL_PROVEEDORES_TEMP_CCDD TMP_PROV 
 			ON TMP_PROV.IDPROVEEDOR=DEPO.GENERICATTRIBUTE6   
 			AND depo.periodseq=TMP_PROV.periodseq
-            
+
             INNER JOIN ENELEXT.ENEL_PDS_TEMP_CCDD TMP_PDS 
                 ON depo.payeeseq=TMP_PDS.payeeseq 
                 and depo.POSITIONSEQ=TMP_PDS.RULEELEMENTOWNERSEQ
                 and depo.periodseq=TMP_PDS.periodseq
-                
+
         where depo.periodseq=iperiodseq
             ;
-      
+
 	filas := sql%rowcount;
     COMMIT;
 
     w_debug('Fin Carga Registros E4E de la tabla ENEL_E4E_CCDD_WBE: '|| to_char(filas) || ' filas.', v_contador_debug);
-        
+
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_E4E_CCDD_WBE',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_E4E_CCDD_WBE.',v_contador_debug);
 
@@ -4696,18 +4696,18 @@ AS
 begin
 
     v_finicio := current_timestamp();
-    
+
         v_txtFechaLiquidacion := '';
     IF (iInterfaz = 'ACTUALIZA_INFORMES_POST') THEN
 		v_txtFechaLiquidacion := to_char(SYSDATE, 'DD/MM/YYYY');
     END IF;
-    
+
 		LOOP
             DELETE FROM ENELEXT.ENEL_TM2_CCDD WHERE PERIODO_BIMENSUAL = iperiod AND ROWNUM <= 10000;
             EXIT WHEN SQL%ROWCOUNT = 0;
             COMMIT;
         END LOOP;  
-    
+
 
     w_debug('Cargando tabla ENEL_TM2_CCDD. Periodo:'|| iperiod ,  v_contador_debug);
 
@@ -4810,7 +4810,7 @@ begin
         and (ETYPE.eventtypeid = 'Captacion Resellers'
         or ETYPE.eventtypeid = 'Ajuste Manual Resellers')
         ;
- 
+
     filas := sql%rowcount;
     COMMIT;
 
@@ -4818,7 +4818,7 @@ begin
 
     dbms_stats.gather_table_stats(ownname => 'ENELEXT',tabname => 'ENEL_TM2_CCDD',estimate_percent => dbms_stats.auto_sample_size,degree => dbms_stats.default_degree,cascade => true);
     w_debug('Fin Actualizacion Indices ENELEXT.ENEL_TM2_CCDD.',v_contador_debug);
-    
+
 
 end;
 --EOM APM 17/06/2025
@@ -4838,7 +4838,7 @@ begin
 		END LOOP;
 	END;
     w_debug('Fin Borrado de la tabla ENEL_DEPOSIT_AGRUPADO.', v_contador_debug);
-    
+
     w_debug('Inicio Borrado de la tabla ENEL_INCENT_AGRUPADO.', v_contador_debug);
     BEGIN
 		LOOP
@@ -4853,12 +4853,12 @@ begin
     IF (iInterfaz = 'ACTUALIZA_INFORMES_POST') THEN
 		v_txtFechaLiquidacion := to_char(SYSDATE, 'DD/MM/YYYY');
     END IF;
-    
+
     w_debug('Cargando tabla ENEL_DEPOSIT_AGRUPADO. Periodo:'|| iperiod ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_DEPOSIT_AGRUPADO(PROCESSINGUNITSEQ, PERIODO, PERIODSEQ, COD_COMERCIAL, REGLA, VALUE, UNIDAD, FECHA_LIQUIDACION,
                                             ESTADO, COD_RETRIBUCION, LINEA_NEGOCIO, CANAL, GRUPO_RETRIBUCION)
-    
+
     SELECT
         depo.PROCESSINGUNITSEQ,
         iperiod PERIODO,
@@ -4877,16 +4877,16 @@ begin
         depo.GENERICATTRIBUTE6 AS LINEA_NEGOCIO,
         POS.GENERICATTRIBUTE7 AS CANAL,
         depo.EARNINGGROUPID AS GRUPO_RETRIBUCION --APM 09/01/2026
-        
+
     FROM CS_DEPOSIT depo
         INNER JOIN CS_PLRUN p 
             ON depo.PIPELINERUNSEQ = P.PIPELINERUNSEQ 
             AND p.tenantid = itenantId
-            
+
      INNER JOIN CS_PERIOD per
             on per.periodseq = depo.periodseq
             and per.removedate= '01/01/2200'
-            
+
         INNER JOIN cs_position pos
             ON pos.payeeseq = depo.payeeseq
             AND pos.removedate  = '01/01/2200'
@@ -4901,10 +4901,10 @@ begin
     w_debug('Fin Carga de la tabla ENEL_DEPOSIT_AGRUPADO: '|| to_char(filas) || ' filas.', v_contador_debug);
 
     w_debug('Cargando tabla ENEL_INCENT_AGRUPADO. Periodo:'|| iperiod ,  v_contador_debug);
-    
+
     INSERT INTO ENELEXT.ENEL_INCENT_AGRUPADO(PROCESSINGUNITSEQ, PERIODO, PERIODSEQ, COD_COMERCIAL, TIPO_INCENTIVO, REGLA, ALTAS,
                                             BAJAS, INCENTIVO, IMPORTE_UNITARIO,UNIDAD, VALUE, UNIDAD_1, FECHA_LIQUIDACION, LINEA_NEGOCIO, CANAL)
-    
+
     SELECT
         incent.PROCESSINGUNITSEQ,
         iperiod PERIODO,
@@ -4922,16 +4922,16 @@ begin
         v_txtFechaLiquidacion AS FECHA_LIQUIDACION,
         incent.GENERICATTRIBUTE2 AS LINEA_NEGOCIO,
         POS.GENERICATTRIBUTE7 AS CANAL
-        
+
     FROM CS_INCENTIVE incent
         INNER JOIN CS_PLRUN p 
             ON incent.PIPELINERUNSEQ = P.PIPELINERUNSEQ 
             AND p.tenantid = itenantId
-            
+
      INNER JOIN CS_PERIOD per
             on per.periodseq = incent.periodseq
             and per.removedate= '01/01/2200'
-            
+
         INNER JOIN cs_position pos
             ON pos.payeeseq = incent.payeeseq
             AND pos.removedate  = '01/01/2200'
@@ -4980,7 +4980,7 @@ BEGIN
 /* BOM - DCR - Gestion Control de Informes */
 begin 
     v_FInicio_Inf := current_timestamp();
-    
+
     SELECT id +1, num_ejecucion +1 INTO v_contador_ctrl_inf, v_num_ejecucion FROM enelext.enel_ctrl_informes
         WHERE id = (SELECT MAX(id) FROM enelext.enel_ctrl_informes);
     IF v_contador_ctrl_inf is null or v_num_ejecucion is null then
@@ -5031,7 +5031,7 @@ end;
         p_Datos_Interfaz(v_Interfaz_Proceso);    
         w_debug('Informes a actualizar  '||v_ARGUMENTOS, v_contador_debug);
         v_Listado_Informes := v_ARGUMENTOS;
-		
+
 		if v_Interfaz_Proceso = 'ACTUALIZA_INFORMES_POST' then -- 18.04.2023
 			-- se deben actualizar los estados de las tablas
 			-- SCAWEB_FINAL
@@ -5040,19 +5040,19 @@ end;
 			, CICLO_FACTURACION = to_char(SYSDATE, 'DD/MM/YYYY')
 			WHERE Periodo = v_periodo
 			and PROCESSINGUNITSEQ = v_puseq;
-			
+
 			--ENEL_RENOVACION_CCDD
 			UPDATE ENELEXT.ENEL_RENOVACION_CCDD
 			SET ESTADO = 'Liquidado'
 			, CICLO_FACTURACION = to_char(SYSDATE, 'DD/MM/YYYY')
 			WHERE Periodo = period;
-			
+
 			--ENEL_CCC_CCDD
 			UPDATE ENELEXT.ENEL_CCC_CCDD
 			SET ESTADO = 'Liquidado'
 			, CICLO_FACTURACION = to_char(SYSDATE, 'DD/MM/YYYY')
 			WHERE Periodo = period;
-			
+
 			--ENEL_REGULARIZACION_CCDD
 			UPDATE ENELEXT.ENEL_REGULARIZACION_CCDD
 			SET ESTADO = 'Liquidado'
@@ -5117,7 +5117,7 @@ end;
         p_Temporal_Productos ( period ,periodSeq , tenantId  );
 
         p_Temporal_E4E_Negativos ( period ,periodSeq , tenantId  );
-        
+
         p_rappeles ( period ,periodSeq , tenantId , v_Interfaz_Proceso, processingUnitSeq );
 
 /*  Informe de Prefactura . Es mas similar el de CES, se modifica 
@@ -5166,13 +5166,13 @@ end;
             -- Actualizamos la fecha del informes en la tabla 
             p_Actualiza_Informe_Fecha ( period, 'SCAWEB_CCDD');      
         end if;
-        
+
         -- Comparativa Pagos solo se hace si se ejecutan todos los informes
         IF v_Listado_Informes = 'ALL' THEN
             p_Comp_Pagos_SCAWEB_E4E ( processingUnitSeq, period ,periodSeq , tenantId  );
             p_E4E_CCDD_WBE ( processingUnitSeq, period ,periodSeq , tenantId  ); --APM 30.04.2025
         end if;        
-        
+
         ---------------------------------------------------
         -- Datos para INFORMES GENERAL DE PROVEEDORES
         ---------------------------------------------------    
@@ -5189,11 +5189,11 @@ end;
         IF f_ExisteInformeEnLista('LIQSCAWEB', v_Listado_Informes) THEN
             -- Extraer datos para Interface de LIQUIDACION MENSUAL SCAWEB  (Captacion - Importe Base)
             p_Informe_CUADRE_LIQ (processingUnitSeq, period ,periodSeq , tenantId , v_Interfaz_Proceso );
-         
+
             -- Actualizamos la fecha del informes en la tabla 
             p_Actualiza_Informe_Fecha ( period, 'LIQSCAWEB_CCDD');    
         end if;
-        
+
 --BOM APM 03.03.2026
             ---------------------------------------------------
             -- Datos para Informe Agrupado de liquidaciones
@@ -5204,7 +5204,7 @@ end;
 				p_Actualiza_Informe_Fecha ( period, 'LIQ_CCDD');    
 			end if;
 --EOM APM 03.03.2026
-		
+
 	ELSE
         w_debug('Periodo YA Liquidado. NO se actualizan Datos de INFORMES', v_contador_debug);
 	end if;

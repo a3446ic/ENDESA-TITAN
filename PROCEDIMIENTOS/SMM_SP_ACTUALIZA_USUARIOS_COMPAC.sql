@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE EXT.SP_SMM_ACTUALIZA_USUARIOS_COMPAC(OUT o_salidacontrol VARCHAR(50))
+CREATE OR REPLACE PROCEDURE EXT.SMM_SP_ACTUALIZA_USUARIOS_COMPAC(OUT o_salidacontrol VARCHAR(50))
 LANGUAGE SQLSCRIPT
 SQL SECURITY INVOKER 
 DEFAULT SCHEMA EXT AS
@@ -108,4 +108,4 @@ BEGIN
     -- CALL EXT.LIB_GLOBAL_ENDESA:WRITE_DEBUG (v_tenantid,v_permisos_log, v_proc_name,'Fin Actualizacion Indices EXT.CS_USUARIOS_ROLES.',v_contador_debug);                                                                                                                                                           
                                                                                                                                                                                                                                           
                                                                                                                                                                                                                                                 
-END;                                                                                                                                                                                                              
+END

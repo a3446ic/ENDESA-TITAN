@@ -5656,8 +5656,7 @@ begin
     w_debug('Inicio Borrado de la tabla ENEL_E4E_NEGATIVOS_PTG.', v_contador_debug);
     BEGIN
         LOOP
-            DELETE FROM ENELEXT.ENEL_E4E_NEGATIVOS_PTG WHERE PERIODO = iperiod AND ROWNUM <= 10000
-            and PROCESSINGUNITSEQ=iprocessingUnitSeq; --APM 13.05.2026
+            DELETE FROM ENELEXT.ENEL_E4E_NEGATIVOS_PTG WHERE PERIODO = iperiod AND ROWNUM <= 10000;
             EXIT WHEN SQL%ROWCOUNT = 0;
             COMMIT;
         END LOOP;
